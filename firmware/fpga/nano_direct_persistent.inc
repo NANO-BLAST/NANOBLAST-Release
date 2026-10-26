@@ -68,8 +68,8 @@ const char *fpga_boot_flash_diagnostic(){
   crc=nano_crc(crc,b,n);off+=n;
  }
  crc^=~0u;
- const unsigned ids[3]={1,5,2};const char *names[3]={"NES","SMS","SNES"};
- for(unsigned i=0;i<3;i++){
+ const unsigned ids[4]={1,5,7,2};const char *names[4]={"NES","SMS/GG","GB/GBC","SNES"};
+ for(unsigned i=0;i<4;i++){
   nanoblast::CoreImageSource source;
   auto read=[](uint32_t a,uint8_t*p,unsigned n){return bflb_flash_read(a,p,n)==0;};
   if(nanoblast::builtin_core_source(read,ids[i],source)&&source.checksum==crc){
@@ -82,21 +82,25 @@ const char *fpga_boot_flash_diagnostic(){
  std::snprintf(nano_boot_diag,sizeof nano_boot_diag,"Boot flash: unknown %08lX",static_cast<unsigned long>(crc));return nano_boot_diag;
 }
 static bool nano_boot_readable(NanoDirectIO&io){
- uint8_t actual[256],expected[256],header[24];bool matches[3]={true,false,false};
+ uint8_t expected[256];bool matches[4]={};
+ nanoblast::CoreImageSource sources[4];const unsigned ids[4]={1,5,7,2};
+ auto read=[](uint32_t a,uint8_t*p,unsigned n){return bflb_flash_read(a,p,n)==0;};
+ for(unsigned i=0;i<4;i++)matches[i]=nanoblast::builtin_core_source(read,ids[i],sources[i]);
  bool legacy=true;bool prior[sizeof NanoPriorBootImages/sizeof NanoPriorBootImages[0]];
  for(bool &match:prior)match=true;
- if(!bflb_flash_read(0x201000,header,sizeof header))matches[1]=!memcmp(header,"NBCORE01",8)&&nano_word(header+8)==5&&nano_word(header+12)==907418&&nano_word(header+20)==0x4b30324e;
- if(!bflb_flash_read(0x300000,header,sizeof header))matches[2]=!memcmp(header,"NBCORE01",8)&&nano_word(header+8)==2&&nano_word(header+12)==907418&&nano_word(header+20)==0x4b30324e;
- const uint32_t bases[3]={0x101000,0x202000,0x301000},offsets[3]={0,0x10000,0x80000};
+ const uint32_t offsets[3]={0,0x10000,0x80000};
+ // Read all samples per core together to reuse each decoded 64-KiB block.
+ uint8_t samples[3][256];
  for(unsigned block=0;block<3;block++){
-  uint32_t off=offsets[block];if(!io.read(off,actual,sizeof actual))return false;
-  for(unsigned i=0;i<3;i++)if(matches[i])matches[i]=!bflb_flash_read(bases[i]+off,expected,sizeof expected)&&!memcmp(actual,expected,sizeof actual);
-  const uint32_t sample=nano_crc(~0u,actual,sizeof actual)^~0u;
+  if(!io.read(offsets[block],samples[block],sizeof expected))return false;
+  const uint32_t sample=nano_crc(~0u,samples[block],sizeof expected)^~0u;
   legacy=legacy&&(sample==NanoLegacySampleCRC[block]);
   for(unsigned i=0;i<sizeof prior/sizeof prior[0];i++)prior[i]=prior[i]&&(sample==NanoPriorBootImages[i].sample[block]);
  }
+ for(unsigned i=0;i<4;i++)for(unsigned block=0;block<3&&matches[i];block++)
+  matches[i]=nanoblast::core_image_read(read,sources[i].base,offsets[block],expected,sizeof expected)&&!memcmp(samples[block],expected,sizeof expected);
  for(bool match:prior)if(match)return true;
- return matches[0]||matches[1]||matches[2]||legacy;
+ return matches[0]||matches[1]||matches[2]||matches[3]||legacy;
 }
 static char nano_flash_detail[48];
 static const char *nano_persist_error="Core flash failed";

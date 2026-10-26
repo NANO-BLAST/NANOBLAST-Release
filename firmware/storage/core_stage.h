@@ -2,7 +2,7 @@
 #pragma once
 #include <cstdint>
 namespace nanoblast {
-constexpr uint32_t CacheStart=0x300000,CacheSize=0xff000,CacheData=CacheStart+4096;
+constexpr uint32_t CacheStart=0x100000,CacheSize=0xdf000,CacheData=CacheStart+4096;
 struct StageIO {
  virtual ~StageIO()=default;
  virtual void staging_started(){}

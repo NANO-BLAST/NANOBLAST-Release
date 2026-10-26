@@ -25,7 +25,7 @@ Shared menus, artwork, core switching, explicit Core boot flash, manual clock se
 - [`licenses/`](licenses): additional third-party notices; upstream notices remain in source files.
 - [`SOURCE_MAP.json`](SOURCE_MAP.json): paths from the original source snapshot.
 
-This main branch reorganises the existing v0.1.0 source. Its firmware and image validation limits remain those recorded in that release. Candidate storage changes are reviewed separately before becoming a new release.
+Version v0.2.0 uses one contiguous compressed asset per core and a shared checked loader. Core storage falls from 3,100,672 to 1,462,272 bytes. The firmware was built natively on macOS; the complete board flash readback passed, and the user confirmed core switching, game launching, GB saves and clock resume work. FPGA bitstreams are unchanged. SNES remains experimental with the existing gameplay limitations.
 
 ## Credits and licence
 
