@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "layout_embedded_in_firmware": true,
+  "assets": [
+    {
+      "core_id": 1,
+      "name": "nes",
+      "file": "nes.core",
+      "offset": 2101248,
+      "bytes": 333364,
+      "span": 335872,
+      "sha256": "36feb7ed131880c6535f8bf77acd98bccc4688c8376bceae914359dc09683bfd",
+      "raw_sha256": "fd5970bb54537f350f9cfa2c54793ac6786cf1f38d3b5eddbba4addf176d9de6",
+      "raw_crc32": 2984255903,
+      "raw_bytes": 907418
+    },
+    {
+      "core_id": 5,
+      "name": "sms-gamegear",
+      "file": "sms-gamegear.core",
+      "offset": 2437120,
+      "bytes": 321392,
+      "span": 323584,
+      "sha256": "8b10f626550116d175e1cc1db2af496040e3a28cabf89228790c4ce4252431a3",
+      "raw_sha256": "8c85bc88ac4991ac164b8ebfa792f362c80046fa56d837553115c210b3eb7de5",
+      "raw_crc32": 2218648118,
+      "raw_bytes": 907418
+    },
+    {
+      "core_id": 7,
+      "name": "gb-colour",
+      "file": "gb-colour.core",
+      "offset": 2760704,
+      "bytes": 351916,
+      "span": 352256,
+      "sha256": "81348b6247eb6abe43a1b2c89fa069223257401055468907a3e464937019388f",
+      "raw_sha256": "e1f06ad528994f78a9b2855555170550972064b5df3fbe35968a1fbfbc2a87f6",
+      "raw_crc32": 2618762091,
+      "raw_bytes": 907418
+    },
+    {
+      "core_id": 2,
+      "name": "snes-experimental",
+      "file": "snes-experimental.core",
+      "offset": 3112960,
+      "bytes": 449296,
+      "span": 450560,
+      "sha256": "f87e8f92d0a4f432228fa427b0d56858840c8bfe401400b5aa942c617ae3574c",
+      "raw_sha256": "3f104b9723ede5a34f3281ad1d3df6528f7893b470b3cdecdc8b8bd459384059",
+      "raw_crc32": 829788162,
+      "raw_bytes": 907418
+    }
+  ],
+  "asset_bank_bytes": 2088960,
+  "assets_sector_bytes": 1462272,
+  "free_bank_bytes": 626688,
+  "staging": {
+    "start": 1048576,
+    "end": 1961984
+  },
+  "preserved_ranges": [
+    [
+      0,
+      262144
+    ],
+    [
+      1961984,
+      2101248
+    ],
+    [
+      4190208,
+      4194304
+    ]
+  ],
+  "FPGA_boot_flash": "unchanged"
+}

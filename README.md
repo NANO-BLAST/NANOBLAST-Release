@@ -25,7 +25,7 @@ Shared menus, artwork, core switching, explicit Core boot flash, manual clock se
 - [`licenses/`](licenses): additional third-party notices; upstream notices remain in source files.
 - [`SOURCE_MAP.json`](SOURCE_MAP.json): paths from the original source snapshot.
 
-This main branch reorganises the existing v0.1.0 source. Its firmware and image validation limits remain those recorded in that release. Candidate storage changes are reviewed separately before becoming a new release.
+This branch is the compressed-core candidate. All four assets use one contiguous NBCRXZ01 file each, with the same checked decoder. Bitstreams are unchanged; native decoder, full FPGA-stream and boot-flash persistence checks pass. Physical migration and core-switching checks are pending. The latest published release remains v0.1.0.
 
 ## Credits and licence
 

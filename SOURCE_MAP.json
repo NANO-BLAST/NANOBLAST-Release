@@ -346,8 +346,6 @@
   "firmware/storage/fpga_flash.h": "work/mister-menu-test/firmware/storage/fpga_flash.h",
   "firmware/storage/fpga_sd.cpp": "work/mister-menu-test/firmware/storage/fpga_sd.cpp",
   "firmware/storage/fpga_sd.h": "work/mister-menu-test/firmware/storage/fpga_sd.h",
-  "firmware/storage/gb_core_asset.cpp": "work/mister-menu-test/firmware/storage/gb_core_asset.cpp",
-  "firmware/storage/gb_core_asset.h": "work/mister-menu-test/firmware/storage/gb_core_asset.h",
   "firmware/storage/gb_save.cpp": "work/mister-menu-test/firmware/storage/gb_save.cpp",
   "firmware/storage/gb_save.h": "work/mister-menu-test/firmware/storage/gb_save.h",
   "firmware/storage/gb_save_transport.cpp": "work/mister-menu-test/firmware/storage/gb_save_transport.cpp",
@@ -915,5 +913,15 @@
   "cores/snes-experimental/src/verilator/sdram_sim.v": "work/snestang/src/verilator/sdram_sim.v",
   "cores/snes-experimental/src/verilator/test_loader.v": "work/snestang/src/verilator/test_loader.v",
   "cores/snes-experimental/src/vram.v": "work/snestang/src/vram.v",
-  "cores/snes-experimental/src/vram_spb.v": "work/snestang/src/vram_spb.v"
+  "cores/snes-experimental/src/vram_spb.v": "work/snestang/src/vram_spb.v",
+  "README.md": "New compressed-core candidate source",
+  "CHANGELOG.md": "New compressed-core candidate source",
+  "firmware/tests/compressed_persistent_test.cpp": "New compressed-core candidate source",
+  "firmware/tests/compressed_programmer_test.cpp": "New compressed-core candidate source",
+  "firmware/tests/compressed_core_test.cpp": "New compressed-core candidate source",
+  "firmware/storage/compressed_core.h": "New compressed-core candidate source",
+  "firmware/storage/compressed_core_slots.h": "New compressed-core candidate source",
+  "firmware/storage/compressed_core.cpp": "New compressed-core candidate source",
+  "firmware/storage/ASSET_LAYOUT.json": "New compressed-core candidate source",
+  "tools/pack_cores.py": "New compressed-core candidate source"
 }
