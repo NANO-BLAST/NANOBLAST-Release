@@ -1,0 +1,1094 @@
+--- before/engine/cart.v
++++ after/engine/cart.v
+@@ -107,6 +107,96 @@
+ wire mbc_ram_enable, mbc_battery;
+ wire mbc_cram_wr;
+ wire [7:0] mbc_cram_wr_do;
++
++reg old_cart_download;
++reg [2:0] mapper_sel_r;
++// extract header fields extracted from cartridge
++// during download
++reg [7:0] cart_mbc_type;
++reg [7:0] cart_rom_size;
++reg [7:0] cart_ram_size;
++reg       cart_cgb_flag;
++reg [7:0] cart_sgb_flag;
++reg [7:0] cart_old_licensee;
++reg [15:0] cart_logo_data[0:7];
++
++// RAM size
++wire [3:0] ram_mask =                  // 0 - no ram
++	   (ram_size == 1)?4'b0000:   // 1 - 2k, 1 bank
++	   (ram_size == 2)?4'b0000:   // 2 - 8k, 1 bank
++	   (ram_size == 3)?4'b0011:   // 3 - 32k, 4 banks
++	   (ram_size == 5)?4'b0111:   // 5 - 64k, 8 banks
++	   4'b1111;                        // 4 - 128k 16 banks
++
++// ROM size
++/*
++wire [8:0] rom_mask =
++	   (cart_rom_size == 0)? 9'b000000001:  // 0 - 2 banks, 32k direct mapped
++	   (cart_rom_size == 1)? 9'b000000011:  // 1 - 4 banks = 64k
++	   (cart_rom_size == 2)? 9'b000000111:  // 2 - 8 banks = 128k
++	   (cart_rom_size == 3)? 9'b000001111:  // 3 - 16 banks = 256k
++	   (cart_rom_size == 4)? 9'b000011111:  // 4 - 32 banks = 512k
++	   (cart_rom_size == 5)? 9'b000111111:  // 5 - 64 banks = 1M
++	   (cart_rom_size == 6)? 9'b001111111:  // 6 - 128 banks = 2M
++		(cart_rom_size == 7)? 9'b011111111:  // 7 - 256 banks = 4M
++		(cart_rom_size == 8)? 9'b111111111:  // 8 - 512 banks = 8M
++		(cart_rom_size == 82)?9'b001111111:  //$52 - 72 banks = 1.1M
++		(cart_rom_size == 83)?9'b001111111:  //$53 - 80 banks = 1.2M
++		(cart_rom_size == 84)?9'b001111111:
++                            9'b001111111;  //$54 - 96 banks = 1.5M
++*/
++
++reg [8:0] rom_mask; // get mask from file size
++
++wire mbc1 = (mapper_sel_r == 3'd3) || (cart_mbc_type == 1) || (cart_mbc_type == 2) || (cart_mbc_type == 3);
++wire mbc2 = (cart_mbc_type == 5) || (cart_mbc_type == 6);
++//wire mmm01 = (cart_mbc_type == 11) || (cart_mbc_type == 12) || (cart_mbc_type == 13) || (cart_mbc_type == 14);
++wire mbc3 = (mapper_sel_r == 3'd4) || (cart_mbc_type == 15) || (cart_mbc_type == 16) || (cart_mbc_type == 17) || (cart_mbc_type == 18) || (cart_mbc_type == 19);
++wire mbc30 = mbc3 && ( (cart_rom_size == 7) || (ram_size == 5) );
++//wire mbc4 = (cart_mbc_type == 21) || (cart_mbc_type == 22) || (cart_mbc_type == 23);
++wire mbc5 = (cart_mbc_type == 25) || (cart_mbc_type == 26) || (cart_mbc_type == 27) || (cart_mbc_type == 28) || (cart_mbc_type == 29) || (cart_mbc_type == 30);
++wire mbc6 = (cart_mbc_type == 32);
++wire mbc7 = (cart_mbc_type == 34);
++wire rocket = (cart_mbc_type == 151) || (cart_mbc_type == 153);
++wire megaduck_en = (cart_mbc_type == 250); // Use a wire to ensure enable is low while loading
++wire duck_md0_cart = megaduck_en && duck_md0_mode;
++
++// MD0 system ROM/laptop carts expose the 32KB external memory cart.
++assign ram_size = duck_md0_cart ? 8'd3 : cart_ram_size;
++
++wire gb_camera = (cart_mbc_type == 252);
++wire tama = (cart_mbc_type == 253);
++
++wire HuC3 = (cart_mbc_type == 254);
++wire HuC1 = (cart_mbc_type == 255);
++
++wire wisdom_tree = (mapper_sel_r == 3'd1);
++wire mani161     = (mapper_sel_r == 3'd2);
++
++wire has_rumble = (cart_mbc_type[7:2] == 6'b0001_11);
++wire cart_rumbling;
++assign rumbling = has_rumble & cart_rumbling;
++
++assign isGBC_game = (cart_cgb_flag);
++assign isSGB_game = (cart_sgb_flag == 8'h03 && cart_old_licensee == 8'h33);
++
++
++// MBC1M detect
++reg [7:0] cart_logo_check;
++reg [2:0] cart_logo_idx;
++reg mbc1m, mmm01;
++reg mbc1m_check_end, mmm01_check_end;
++
++reg sachen, sachen_t1, sachen_t2;
++
++wire mbc1m_bank = (~|ioctl_addr[24:20] && ioctl_addr[19:12] == 8'h40); // $40000
++wire mmm01_bank = (ioctl_addr[18:12] == 7'h78); // $78000+
++wire cart_logo_match = &cart_logo_check;
++
++
++
++wire [7:0] cram_q_h, cram_q_l;
++wire [7:0] cram_q = cram_addr[0] ? cram_q_h : cram_q_l;
+ 
+ mappers mappers (
+ 	.reset ( reset ),
+@@ -192,91 +282,6 @@
+ 
+ );
+ 
+-// extract header fields extracted from cartridge
+-// during download
+-reg [7:0] cart_mbc_type;
+-reg [7:0] cart_rom_size;
+-reg [7:0] cart_ram_size;
+-reg       cart_cgb_flag;
+-reg [7:0] cart_sgb_flag;
+-reg [7:0] cart_old_licensee;
+-reg [15:0] cart_logo_data[0:7];
+-
+-// RAM size
+-wire [3:0] ram_mask =                  // 0 - no ram
+-	   (ram_size == 1)?4'b0000:   // 1 - 2k, 1 bank
+-	   (ram_size == 2)?4'b0000:   // 2 - 8k, 1 bank
+-	   (ram_size == 3)?4'b0011:   // 3 - 32k, 4 banks
+-	   (ram_size == 5)?4'b0111:   // 5 - 64k, 8 banks
+-	   4'b1111;                        // 4 - 128k 16 banks
+-
+-// ROM size
+-/*
+-wire [8:0] rom_mask =
+-	   (cart_rom_size == 0)? 9'b000000001:  // 0 - 2 banks, 32k direct mapped
+-	   (cart_rom_size == 1)? 9'b000000011:  // 1 - 4 banks = 64k
+-	   (cart_rom_size == 2)? 9'b000000111:  // 2 - 8 banks = 128k
+-	   (cart_rom_size == 3)? 9'b000001111:  // 3 - 16 banks = 256k
+-	   (cart_rom_size == 4)? 9'b000011111:  // 4 - 32 banks = 512k
+-	   (cart_rom_size == 5)? 9'b000111111:  // 5 - 64 banks = 1M
+-	   (cart_rom_size == 6)? 9'b001111111:  // 6 - 128 banks = 2M
+-		(cart_rom_size == 7)? 9'b011111111:  // 7 - 256 banks = 4M
+-		(cart_rom_size == 8)? 9'b111111111:  // 8 - 512 banks = 8M
+-		(cart_rom_size == 82)?9'b001111111:  //$52 - 72 banks = 1.1M
+-		(cart_rom_size == 83)?9'b001111111:  //$53 - 80 banks = 1.2M
+-		(cart_rom_size == 84)?9'b001111111:
+-                            9'b001111111;  //$54 - 96 banks = 1.5M
+-*/
+-
+-reg [8:0] rom_mask; // get mask from file size
+-
+-wire mbc1 = (mapper_sel_r == 3'd3) || (cart_mbc_type == 1) || (cart_mbc_type == 2) || (cart_mbc_type == 3);
+-wire mbc2 = (cart_mbc_type == 5) || (cart_mbc_type == 6);
+-//wire mmm01 = (cart_mbc_type == 11) || (cart_mbc_type == 12) || (cart_mbc_type == 13) || (cart_mbc_type == 14);
+-wire mbc3 = (mapper_sel_r == 3'd4) || (cart_mbc_type == 15) || (cart_mbc_type == 16) || (cart_mbc_type == 17) || (cart_mbc_type == 18) || (cart_mbc_type == 19);
+-wire mbc30 = mbc3 && ( (cart_rom_size == 7) || (ram_size == 5) );
+-//wire mbc4 = (cart_mbc_type == 21) || (cart_mbc_type == 22) || (cart_mbc_type == 23);
+-wire mbc5 = (cart_mbc_type == 25) || (cart_mbc_type == 26) || (cart_mbc_type == 27) || (cart_mbc_type == 28) || (cart_mbc_type == 29) || (cart_mbc_type == 30);
+-wire mbc6 = (cart_mbc_type == 32);
+-wire mbc7 = (cart_mbc_type == 34);
+-wire rocket = (cart_mbc_type == 151) || (cart_mbc_type == 153);
+-wire megaduck_en = (cart_mbc_type == 250); // Use a wire to ensure enable is low while loading
+-wire duck_md0_cart = megaduck_en && duck_md0_mode;
+-
+-// MD0 system ROM/laptop carts expose the 32KB external memory cart.
+-assign ram_size = duck_md0_cart ? 8'd3 : cart_ram_size;
+-
+-wire gb_camera = (cart_mbc_type == 252);
+-wire tama = (cart_mbc_type == 253);
+-
+-wire HuC3 = (cart_mbc_type == 254);
+-wire HuC1 = (cart_mbc_type == 255);
+-
+-wire wisdom_tree = (mapper_sel_r == 3'd1);
+-wire mani161     = (mapper_sel_r == 3'd2);
+-
+-wire has_rumble = (cart_mbc_type[7:2] == 6'b0001_11);
+-wire cart_rumbling;
+-assign rumbling = has_rumble & cart_rumbling;
+-
+-assign isGBC_game = (cart_cgb_flag);
+-assign isSGB_game = (cart_sgb_flag == 8'h03 && cart_old_licensee == 8'h33);
+-
+-
+-// MBC1M detect
+-reg [7:0] cart_logo_check;
+-reg [2:0] cart_logo_idx;
+-reg mbc1m, mmm01;
+-reg mbc1m_check_end, mmm01_check_end;
+-
+-reg sachen, sachen_t1, sachen_t2;
+-
+-wire mbc1m_bank = (~|ioctl_addr[24:20] && ioctl_addr[19:12] == 8'h40); // $40000
+-wire mmm01_bank = (ioctl_addr[18:12] == 7'h78); // $78000+
+-wire cart_logo_match = &cart_logo_check;
+-
+-reg old_cart_download;
+-reg [2:0] mapper_sel_r;
+ always @(posedge clk_sys) begin
+ 
+ 	old_cart_download <= cart_download;
+@@ -400,8 +405,7 @@
+ 
+ assign cart_do = cart_do_r;
+ 
+-wire [7:0] cram_q_h, cram_q_l;
+-wire [7:0] cram_q = cram_addr[0] ? cram_q_h : cram_q_l;
++
+ 
+ assign is_cram_addr = ~nCS & ~cart_addr[14];
+ assign cram_rd = cart_rd & is_cram_addr;
+--- before/engine/mappers/mappers.v
++++ after/engine/mappers/mappers.v
+@@ -83,30 +83,22 @@
+ 
+ );
+ 
+-tri1 [7:0] cram_do_b;
+-tri1 [7:0] rom_do_b;
+-tri0 [22:0] mbc_addr_b;
+-tri0 [16:0] cram_addr_b;
+-tri0 ram_enabled_b, has_battery_b;
+-tri0 [15:0] savestate_back_b;
+-tri0 [63:0] savestate_back2_b;
+-tri0 [7:0] cram_wr_do_b;
+-tri0 cram_wr_b;
+-tri0 cart_oe_b;
+-tri0 [31:0] RTC_timestampOut_b;
+-tri0 [47:0] RTC_savedtimeOut_b;
+-tri0 RTC_inuse_b;
+-
+-
++// NANOBLAST: independent mapper outputs and an explicit mux. Internal
++// tri-state resolution is not portable between Intel and Gowin synthesis.
+ wire ce = speed ? ce_cpu2x : ce_cpu;
+-wire no_mapper = ~(mbc1 | mbc2 | mbc3 | mbc5 | mbc6 | mbc7 | mmm01 | huc1 | huc3 | gb_camera | tama | rocket | sachen | wisdom_tree | mani161 | megaduck);
+-wire no_mapper_single_bank = no_mapper & ~rom_mask[1];
+-wire no_mapper_multi_bank  = no_mapper &  rom_mask[1]; // size > 32KB
+-wire rom_override = (rocket);
+-wire cart_oe_override = (mbc3 | mbc7 | huc1 | huc3 | gb_camera | tama);
+-
++wire no_mapper = !(mbc1|mbc2|mbc3|mbc5);
++wire single_bank = no_mapper && !rom_mask[1];
++wire use1 = mbc1 || (no_mapper && !single_bank);
++wire [22:0] a1,a2,a3,a5;
++wire [16:0] c1,c2,c3,c5;
++wire [7:0] d1,d2,d3,d5;
++wire r1,r2,r3,r5,b1,b2,b3,b5,oe3;
++wire [15:0] s1,s2,s3,s5;
++wire [31:0] rtc_stamp;
++wire [47:0] rtc_saved;
++wire rtc_active;
+ mbc1 map_mbc1 (
+-	.enable           ( mbc1 | no_mapper_multi_bank ),
++	.enable           ( use1 ),
+ 	.mbc1m            ( mbc1m ),
+ 
+ 	.clk_sys          ( clk_sys ),
+@@ -114,11 +106,11 @@
+ 
+ 	.savestate_load   ( savestate_load ),
+ 	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
++	.savestate_back_b ( s1 ),
+ 
+ 	.has_ram          ( has_ram  ),
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
++	.ram_mask         ( ram_mask[1:0] ),
++	.rom_mask         ( rom_mask[6:0] ),
+ 
+ 	.cart_addr        ( cart_addr ),
+ 	.cart_a15         ( cart_a15 ),
+@@ -129,14 +121,13 @@
+ 	.cart_di          ( cart_di ),
+ 
+ 	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
++	.cram_do_b        ( d1 ),
++	.cram_addr_b      ( c1 ),
++
++	.mbc_addr_b       ( a1 ),
++	.ram_enabled_b    ( r1 ),
++	.has_battery_b    ( b1 )
++);
+ mbc2 map_mbc2 (
+ 	.enable           ( mbc2 ),
+ 
+@@ -145,10 +136,10 @@
+ 
+ 	.savestate_load   ( savestate_load ),
+ 	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
+-
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
++	.savestate_back_b ( s2 ),
++
++	.ram_mask         ( ram_mask[1:0] ),
++	.rom_mask         ( rom_mask[6:0] ),
+ 
+ 	.cart_addr        ( cart_addr ),
+ 	.cart_a15         ( cart_a15 ),
+@@ -159,14 +150,13 @@
+ 	.cart_di          ( cart_di ),
+ 
+ 	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
++	.cram_do_b        ( d2 ),
++	.cram_addr_b      ( c2 ),
++
++	.mbc_addr_b       ( a2 ),
++	.ram_enabled_b    ( r2 ),
++	.has_battery_b    ( b2 )
++);
+ mbc3 map_mbc3 (
+ 	.enable            ( mbc3 ),
+ 	.reset             ( reset ),
+@@ -177,13 +167,13 @@
+ 
+ 	.savestate_load    ( savestate_load ),
+ 	.savestate_data    ( savestate_data ),
+-	.savestate_back_b  ( savestate_back_b ),
++	.savestate_back_b  ( s3 ),
+ 
+ 	.ce_32k            ( ce_32k            ),
+ 	.RTC_time          ( RTC_time         ),
+-	.RTC_timestampOut_b( RTC_timestampOut_b ),
+-	.RTC_savedtimeOut_b( RTC_savedtimeOut_b ),
+-	.RTC_inuse_b       ( RTC_inuse_b      ),
++	.RTC_timestampOut_b( rtc_stamp ),
++	.RTC_savedtimeOut_b( rtc_saved ),
++	.RTC_inuse_b       ( rtc_active ),
+ 
+ 	.bk_wr             ( bk_wr     ),
+ 	.bk_rtc_wr         ( bk_rtc_wr ),
+@@ -192,8 +182,8 @@
+ 	.img_size          ( img_size  ),
+ 
+ 	.has_ram           ( has_ram  ),
+-	.ram_mask          ( ram_mask ),
+-	.rom_mask          ( rom_mask ),
++	.ram_mask          ( ram_mask[2:0] ),
++	.rom_mask          ( rom_mask[7:0] ),
+ 
+ 	.cart_addr         ( cart_addr     ),
+ 	.cart_a15          ( cart_a15      ),
+@@ -203,19 +193,18 @@
+ 	.cart_rd           ( cart_rd ),
+ 	.cart_wr           ( cart_wr ),
+ 	.cart_di           ( cart_di ),
+-	.cart_oe_b         ( cart_oe_b ),
++	.cart_oe_b         ( oe3 ),
+ 
+ 	.nCS               ( nCS      ),
+ 
+ 	.cram_di           ( cram_di     ),
+-	.cram_do_b         ( cram_do_b   ),
+-	.cram_addr_b       ( cram_addr_b ),
+-
+-	.mbc_addr_b        ( mbc_addr_b    ),
+-	.ram_enabled_b     ( ram_enabled_b ),
+-	.has_battery_b     ( has_battery_b )
+-);
+-
++	.cram_do_b         ( d3 ),
++	.cram_addr_b       ( c3 ),
++
++	.mbc_addr_b        ( a3 ),
++	.ram_enabled_b     ( r3 ),
++	.has_battery_b     ( b3 )
++);
+ mbc5 map_mbc5 (
+ 	.enable           ( mbc5 ),
+ 
+@@ -224,7 +213,7 @@
+ 
+ 	.savestate_load   ( savestate_load ),
+ 	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
++	.savestate_back_b ( s5 ),
+ 
+ 	.has_ram          ( has_ram  ),
+ 	.ram_mask         ( ram_mask ),
+@@ -238,410 +227,27 @@
+ 	.cart_di          ( cart_di ),
+ 
+ 	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b ),
++	.cram_do_b        ( d5 ),
++	.cram_addr_b      ( c5 ),
++
++	.mbc_addr_b       ( a5 ),
++	.ram_enabled_b    ( r5 ),
++	.has_battery_b    ( b5 ),
+ 	.rumbling         ( rumbling )
+ );
+ 
+-mbc6 map_mbc6 (
+-	.enable           ( mbc6 ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data2 ),
+-	.savestate_back_b ( savestate_back2_b ),
+-
+-	.has_ram          ( has_ram  ),
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_mbc_type    ( cart_mbc_type ),
+-
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-mbc7 map_mbc7 (
+-	.enable           ( mbc7 ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-	.ce_1x            ( ce_cpu ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
+-	.savestate_data2  ( savestate_data2 ),
+-	.savestate_back2_b( savestate_back2_b ),
+-
+-	.joystick_analog_x  ( joystick_analog_0[7:0] ),
+-	.joystick_analog_y  ( joystick_analog_0[15:8] ),
+-
+-	.has_ram          ( has_ram  ),
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_mbc_type    ( cart_mbc_type ),
+-
+-	.cart_rd          ( cart_rd ),
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-	.cart_oe_b        ( cart_oe_b ),
+-
+-	.nCS              ( nCS      ),
+-
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.cram_wr_do_b     ( cram_wr_do_b ),
+-	.cram_wr_b        ( cram_wr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-mmm01 map_mmm01 (
+-	.enable           ( mmm01 ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data2 ),
+-	.savestate_back_b ( savestate_back2_b ),
+-
+-	.has_ram          ( has_ram  ),
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_mbc_type    ( cart_mbc_type ),
+-
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-huc1 map_huc1 (
+-	.enable           ( huc1 ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
+-
+-	.has_ram          ( has_ram  ),
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_mbc_type    ( cart_mbc_type ),
+-
+-	.cart_rd          ( cart_rd ),
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-	.cart_oe_b        ( cart_oe_b ),
+-
+-	.cram_rd          ( cram_rd ),
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-huc3 map_huc3 (
+-	.enable            ( huc3 ),
+-
+-	.clk_sys           ( clk_sys ),
+-	.ce_cpu            ( ce ),
+-
+-	.savestate_load    ( savestate_load ),
+-	.savestate_data    ( savestate_data2 ),
+-	.savestate_back_b  ( savestate_back2_b ),
+-
+-	.ce_32k            ( ce_32k           ),
+-	.RTC_time          ( RTC_time         ),
+-	.RTC_timestampOut_b( RTC_timestampOut_b ),
+-	.RTC_savedtimeOut_b( RTC_savedtimeOut_b ),
+-	.RTC_inuse_b       ( RTC_inuse_b      ),
+-
+-	.bk_rtc_wr         ( bk_rtc_wr ),
+-	.bk_addr           ( bk_addr   ),
+-	.bk_data           ( bk_data   ),
+-
+-	.has_ram           ( has_ram  ),
+-	.ram_mask          ( ram_mask ),
+-	.rom_mask          ( rom_mask ),
+-
+-	.cart_addr         ( cart_addr ),
+-	.cart_a15          ( cart_a15 ),
+-
+-	.cart_mbc_type     ( cart_mbc_type ),
+-
+-	.cart_rd           ( cart_rd ),
+-	.cart_wr           ( cart_wr ),
+-	.cart_di           ( cart_di ),
+-	.cart_oe_b         ( cart_oe_b ),
+-
+-	.nCS               ( nCS      ),
+-
+-	.cram_di           ( cram_di ),
+-	.cram_do_b         ( cram_do_b ),
+-	.cram_addr_b       ( cram_addr_b ),
+-
+-	.mbc_addr_b        ( mbc_addr_b ),
+-	.ram_enabled_b     ( ram_enabled_b ),
+-	.has_battery_b     ( has_battery_b )
+-);
+-
+-
+-gb_camera map_gb_camera (
+-	.enable           ( gb_camera ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
+-
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_mbc_type    ( cart_mbc_type ),
+-
+-	.cart_rd          ( cart_rd ),
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-	.cart_oe_b        ( cart_oe_b ),
+-
+-	.cram_rd          ( cram_rd ),
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-// TODO: TAMA RTC
+-tama map_tama (
+-	.enable           ( tama ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-	.ce_32k           ( ce_32k   ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data2 ),
+-	.savestate_back_b ( savestate_back2_b ),
+-
+-	.has_ram          ( has_ram  ),
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_mbc_type    ( cart_mbc_type ),
+-
+-	.cart_rd          ( cart_rd ),
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-	.cart_oe_b        ( cart_oe_b ),
+-
+-	.nCS              ( nCS      ),
+-
+-	.cram_rd          ( cram_rd ),
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.cram_wr_do_b     ( cram_wr_do_b ),
+-	.cram_wr_b        ( cram_wr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-rocket map_rocket (
+-	.enable           ( rocket ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
+-
+-	.has_ram          ( has_ram  ),
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_mbc_type    ( cart_mbc_type ),
+-
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-
+-	.rom_di           ( rom_di ),
+-	.rom_do_b         ( rom_do_b ),
+-
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-sachen map_sachen (
+-	.enable           ( sachen ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-
+-	.isGBC_game       ( isGBC_game ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data2 ),
+-	.savestate_back_b ( savestate_back2_b ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-
+-	.nCS              ( nCS      ),
+-
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-megaduck map_megaduck (
+-	.enable           ( megaduck ),
+-	.duck_md0_mode    ( duck_md0_mode ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
+-
+-	.has_ram          ( has_ram  ),
+-	.ram_mask         ( ram_mask ),
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_mbc_type    ( cart_mbc_type ),
+-
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-// Mani 4-in-1 DMG 601 & Wisdom Tree 32KB bank mappers
+-misc_mapper map_misc (
+-	.enable           ( ~reset & (wisdom_tree | mani161) ),
+-
+-	.clk_sys          ( clk_sys ),
+-	.ce_cpu           ( ce ),
+-
+-	.mapper_sel       ( mani161 ),
+-
+-	.savestate_load   ( savestate_load ),
+-	.savestate_data   ( savestate_data ),
+-	.savestate_back_b ( savestate_back_b ),
+-
+-	.rom_mask         ( rom_mask ),
+-
+-	.cart_addr        ( cart_addr ),
+-	.cart_a15         ( cart_a15 ),
+-
+-	.cart_wr          ( cart_wr ),
+-	.cart_di          ( cart_di ),
+-
+-	.cram_di          ( cram_di ),
+-	.cram_do_b        ( cram_do_b ),
+-	.cram_addr_b      ( cram_addr_b ),
+-
+-	.mbc_addr_b       ( mbc_addr_b ),
+-	.ram_enabled_b    ( ram_enabled_b ),
+-	.has_battery_b    ( has_battery_b )
+-);
+-
+-assign { cram_do } = { cram_do_b };
+-assign { savestate_back, savestate_back2 } = { savestate_back_b, savestate_back2_b };
+-assign { RTC_timestampOut, RTC_savedtimeOut, RTC_inuse } = { RTC_timestampOut_b, RTC_savedtimeOut_b, RTC_inuse_b };
+-assign { cram_wr_do, cram_wr } = { cram_wr_do_b, cram_wr_b };
+-
+-assign mbc_addr = no_mapper_single_bank ? {8'd0, cart_addr[14:0]} : mbc_addr_b;
+-assign cram_addr = no_mapper_single_bank ? {4'd0, cart_addr[12:0]} : cram_addr_b;
+-assign has_battery = no_mapper_single_bank ? (cart_mbc_type == 8'h09) : has_battery_b;
+-assign ram_enabled = no_mapper_single_bank ? has_ram : ram_enabled_b;
+-assign rom_do = rom_override ? rom_do_b : rom_di;
+-assign cart_oe = cart_oe_override ? cart_oe_b : ((cart_rd & ~cart_a15) | (cram_rd & ram_enabled));
+-
+-endmodule+assign mbc_addr = single_bank ? {8'd0,cart_addr} : mbc3 ? a3 : mbc2 ? a2 : mbc5 ? a5 : a1;
++assign cram_addr = single_bank ? {4'd0,cart_addr[12:0]} : mbc3 ? c3 : mbc2 ? c2 : mbc5 ? c5 : c1;
++assign ram_enabled = single_bank ? has_ram : mbc3 ? r3 : mbc2 ? r2 : mbc5 ? r5 : r1;
++assign has_battery = single_bank ? cart_mbc_type==8'h09 : mbc3 ? b3 : mbc2 ? b2 : mbc5 ? b5 : b1;
++assign cram_do = single_bank ? (has_ram ? cram_di : 8'hff) : mbc3 ? d3 : mbc2 ? d2 : mbc5 ? d5 : d1;
++assign rom_do = rom_di;
++assign cart_oe = mbc3 ? oe3 : ((cart_rd && !cart_a15) || (cram_rd && ram_enabled));
++assign savestate_back = mbc3 ? s3 : mbc2 ? s2 : mbc5 ? s5 : use1 ? s1 : 16'd0;
++assign savestate_back2 = 0;
++assign RTC_timestampOut = mbc3 ? rtc_stamp : 0;
++assign RTC_savedtimeOut = mbc3 ? rtc_saved : 0;
++assign RTC_inuse = mbc3 && rtc_active;
++assign cram_wr_do = 0;
++assign cram_wr = 0;
++endmodule
+--- before/engine/mappers/mbc1.v
++++ after/engine/mappers/mbc1.v
+@@ -7,7 +7,7 @@
+ 
+ 	input         savestate_load,
+ 	input [15:0]  savestate_data,
+-	inout [15:0]  savestate_back_b,
++	output [15:0]  savestate_back_b,
+ 
+ 	input         has_ram,
+ 	input  [1:0]  ram_mask,
+@@ -22,12 +22,12 @@
+ 	input  [7:0]  cart_di,
+ 
+ 	input  [7:0]  cram_di,
+-	inout  [7:0]  cram_do_b,
+-	inout [16:0]  cram_addr_b,
++	output  [7:0]  cram_do_b,
++	output [16:0]  cram_addr_b,
+ 
+-	inout [22:0]  mbc_addr_b,
+-	inout         ram_enabled_b,
+-	inout         has_battery_b
++	output [22:0]  mbc_addr_b,
++	output         ram_enabled_b,
++	output         has_battery_b
+ );
+ 
+ wire [22:0] mbc_addr;
+@@ -37,12 +37,12 @@
+ wire has_battery;
+ wire [15:0] savestate_back;
+ 
+-assign mbc_addr_b       = enable ? mbc_addr       : 23'hZ;
+-assign cram_do_b        = enable ? cram_do        :  8'hZ;
+-assign cram_addr_b      = enable ? cram_addr      : 17'hZ;
+-assign ram_enabled_b    = enable ? ram_enabled    :  1'hZ;
+-assign has_battery_b    = enable ? has_battery    :  1'hZ;
+-assign savestate_back_b = enable ? savestate_back : 16'hZ;
++assign mbc_addr_b       = mbc_addr;
++assign cram_do_b        = cram_do;
++assign cram_addr_b      = cram_addr;
++assign ram_enabled_b    = ram_enabled;
++assign has_battery_b    = has_battery;
++assign savestate_back_b = savestate_back;
+ 
+ 
+ // https://forums.nesdev.com/viewtopic.php?p=168940#p168940
+--- before/engine/mappers/mbc2.v
++++ after/engine/mappers/mbc2.v
+@@ -6,7 +6,7 @@
+ 
+ 	input        savestate_load,
+ 	input [15:0] savestate_data,
+-	inout [15:0] savestate_back_b,
++	output [15:0] savestate_back_b,
+ 
+ 	input  [1:0] ram_mask,
+ 	input  [6:0] rom_mask,
+@@ -20,12 +20,12 @@
+ 	input  [7:0] cart_di,
+ 
+ 	input  [7:0] cram_di,
+-	inout  [7:0] cram_do_b,
+-	inout [16:0] cram_addr_b,
++	output  [7:0] cram_do_b,
++	output [16:0] cram_addr_b,
+ 
+-	inout [22:0] mbc_addr_b,
+-	inout        ram_enabled_b,
+-	inout        has_battery_b
++	output [22:0] mbc_addr_b,
++	output        ram_enabled_b,
++	output        has_battery_b
+ );
+ 
+ wire [22:0] mbc_addr;
+@@ -35,12 +35,12 @@
+ wire has_battery;
+ wire [15:0] savestate_back;
+ 
+-assign mbc_addr_b       = enable ? mbc_addr       : 23'hZ;
+-assign cram_do_b        = enable ? cram_do        :  8'hZ;
+-assign cram_addr_b      = enable ? cram_addr      : 17'hZ;
+-assign ram_enabled_b    = enable ? ram_enabled    :  1'hZ;
+-assign has_battery_b    = enable ? has_battery    :  1'hZ;
+-assign savestate_back_b = enable ? savestate_back : 16'hZ;
++assign mbc_addr_b       = mbc_addr;
++assign cram_do_b        = cram_do;
++assign cram_addr_b      = cram_addr;
++assign ram_enabled_b    = ram_enabled;
++assign has_battery_b    = has_battery;
++assign savestate_back_b = savestate_back;
+ 
+ // 0x0000-0x3FFF = Bank 0
+ wire [3:0] mbc_rom_bank = (~cart_addr[14]) ? 4'd0 : mbc_rom_bank_reg;
+--- before/engine/mappers/mbc3.v
++++ after/engine/mappers/mbc3.v
+@@ -8,13 +8,13 @@
+ 
+ 	input             savestate_load,
+ 	input      [15:0] savestate_data,
+-	inout      [15:0] savestate_back_b,
++	output      [15:0] savestate_back_b,
+ 
+ 	input             ce_32k,
+ 	input      [32:0] RTC_time,
+-	inout      [31:0] RTC_timestampOut_b,
+-	inout      [47:0] RTC_savedtimeOut_b,
+-	inout             RTC_inuse_b,
++	output      [31:0] RTC_timestampOut_b,
++	output      [47:0] RTC_savedtimeOut_b,
++	output             RTC_inuse_b,
+ 
+ 	input             bk_wr,
+ 	input             bk_rtc_wr,
+@@ -34,17 +34,17 @@
+ 	input             cart_rd,
+ 	input             cart_wr,
+ 	input       [7:0] cart_di,
+-	inout             cart_oe_b,
++	output             cart_oe_b,
+ 
+ 	input             nCS,
+ 
+ 	input       [7:0] cram_di,
+-	inout       [7:0] cram_do_b,
+-	inout      [16:0] cram_addr_b,
+-
+-	inout      [22:0] mbc_addr_b,
+-	inout             ram_enabled_b,
+-	inout             has_battery_b
++	output       [7:0] cram_do_b,
++	output      [16:0] cram_addr_b,
++
++	output      [22:0] mbc_addr_b,
++	output             ram_enabled_b,
++	output             has_battery_b
+ );
+ 
+ wire [22:0] mbc_addr;
+@@ -60,16 +60,16 @@
+ reg [47:0] RTC_savedtimeOut;
+ reg        RTC_inuse;
+ 
+-assign mbc_addr_b         = enable ? mbc_addr         : 23'hZ;
+-assign cram_do_b          = enable ? cram_do          :  8'hZ;
+-assign cram_addr_b        = enable ? cram_addr        : 17'hZ;
+-assign cart_oe_b          = enable ? cart_oe          :  1'hZ;
+-assign ram_enabled_b      = enable ? ram_enabled      :  1'hZ;
+-assign has_battery_b      = enable ? has_battery      :  1'hZ;
+-assign savestate_back_b   = enable ? savestate_back   : 16'hZ;
+-assign RTC_timestampOut_b = enable ? RTC_timestampOut : 32'hZ;
+-assign RTC_savedtimeOut_b = enable ? RTC_savedtimeOut : 48'hZ;
+-assign RTC_inuse_b        = enable ? RTC_inuse        :  1'hZ;
++assign mbc_addr_b         = mbc_addr;
++assign cram_do_b          = cram_do;
++assign cram_addr_b        = cram_addr;
++assign cart_oe_b          = cart_oe;
++assign ram_enabled_b      = ram_enabled;
++assign has_battery_b      = has_battery;
++assign savestate_back_b   = savestate_back;
++assign RTC_timestampOut_b = RTC_timestampOut;
++assign RTC_savedtimeOut_b = RTC_savedtimeOut;
++assign RTC_inuse_b        = RTC_inuse;
+ 
+ // --------------------- CPU register interface ------------------
+ 
+--- before/engine/mappers/mbc5.v
++++ after/engine/mappers/mbc5.v
+@@ -6,7 +6,7 @@
+ 
+ 	input        savestate_load,
+ 	input [15:0] savestate_data,
+-	inout [15:0] savestate_back_b,
++	output [15:0] savestate_back_b,
+ 
+ 	input        has_ram,
+ 	input  [3:0] ram_mask,
+@@ -21,12 +21,12 @@
+ 	input  [7:0] cart_di,
+ 
+ 	input  [7:0] cram_di,
+-	inout  [7:0] cram_do_b,
+-	inout [16:0] cram_addr_b,
++	output  [7:0] cram_do_b,
++	output [16:0] cram_addr_b,
+ 
+-	inout [22:0] mbc_addr_b,
+-	inout        ram_enabled_b,
+-	inout        has_battery_b,
++	output [22:0] mbc_addr_b,
++	output        ram_enabled_b,
++	output        has_battery_b,
+ 	output       rumbling
+ );
+ 
+@@ -37,12 +37,12 @@
+ wire has_battery;
+ wire [15:0] savestate_back;
+ 
+-assign mbc_addr_b       = enable ? mbc_addr       : 23'hZ;
+-assign cram_do_b        = enable ? cram_do        :  8'hZ;
+-assign cram_addr_b      = enable ? cram_addr      : 17'hZ;
+-assign ram_enabled_b    = enable ? ram_enabled    :  1'hZ;
+-assign has_battery_b    = enable ? has_battery    :  1'hZ;
+-assign savestate_back_b = enable ? savestate_back : 16'hZ;
++assign mbc_addr_b       = mbc_addr;
++assign cram_do_b        = cram_do;
++assign cram_addr_b      = cram_addr;
++assign ram_enabled_b    = ram_enabled;
++assign has_battery_b    = has_battery;
++assign savestate_back_b = savestate_back;
+ assign rumbling         = mbc_ram_bank_reg[3];
+ 
+ wire [3:0] mbc5_ram_bank = mbc_ram_bank_reg & ram_mask;
+--- before/firmware/storage/gb_core_asset.cpp
++++ after/firmware/storage/gb_core_asset.cpp
+@@ -17,28 +17,32 @@
+   off+=take;p+=take;n-=take;
+  }return true;
+ }
+-struct Header{uint32_t length,crc,packed,count,meta;bool deflate;};
++struct Header{uint32_t length,crc,packed,count,meta,block_bytes;bool deflate;};
+ bool header(CoreRead read,Header&h){
+- uint8_t b[64];if(!packed_read(read,0,b,64)||(std::memcmp(b,"NBGBPK01",8)&&std::memcmp(b,"NBGBZP01",8))||word(b+8)!=7||word(b+12)!=907418||word(b+20)!=0x4b30324e||word(b+32)!=4096)return false;
+- h={word(b+12),word(b+16),word(b+24),word(b+28),word(b+36),!std::memcmp(b,"NBGBZP01",8)};
+- if(h.count!=222||h.packed>0x57000||!h.packed)return false;
++ uint8_t b[64];if(!packed_read(read,0,b,64))return false;
++ const bool legacy=!std::memcmp(b,"NBGBPK01",8);
++ const bool zp1=!std::memcmp(b,"NBGBZP01",8),zp2=!std::memcmp(b,"NBGBZP02",8);
++ const uint32_t block_bytes=word(b+32);
++ if((!legacy&&!zp1&&!zp2)||word(b+8)!=7||word(b+12)!=907418||word(b+20)!=0x4b30324e||block_bytes!=(zp2?16384u:4096u))return false;
++ h={word(b+12),word(b+16),word(b+24),word(b+28),word(b+36),block_bytes,zp1||zp2};
++ if(h.count!=(h.length+h.block_bytes-1)/h.block_bytes||h.packed>0x57000||!h.packed)return false;
+  uint32_t crc=crc32_update(~0u,b,36);uint8_t entry[8];uint32_t previous=4096;
+  for(unsigned i=0;i<h.count;i++){
+   if(!packed_read(read,64+i*8,entry,8))return false;crc=crc32_update(crc,entry,8);
+   uint32_t start=word(entry),n=word(entry+4)&0x7fffffffu;
+-  unsigned expected=std::min(4096u,unsigned(h.length-i*4096));
++  unsigned expected=std::min(unsigned(h.block_bytes),unsigned(h.length-i*h.block_bytes));
+   if(start!=previous||!n||n>expected||(word(entry+4)&0x80000000u&&n!=expected)||start>4096+h.packed||n>4096+h.packed-start)return false;
+   previous=start+n;
+  }
+  return (crc^~0u)==h.meta&&previous==4096+h.packed;
+ }
+-uint8_t decoded[4096],compressed[4096];uint32_t cached_block=~0u,cached_meta=0;CoreRead cached_reader=nullptr;
++uint8_t decoded[16384],compressed[16384];uint32_t cached_block=~0u,cached_meta=0,cached_size=0;CoreRead cached_reader=nullptr;
+ bool block(CoreRead read,const Header&h,uint32_t index){
+- if(cached_block==index&&cached_meta==h.meta&&cached_reader==read)return true;
++ if(cached_block==index&&cached_meta==h.meta&&cached_size==h.block_bytes&&cached_reader==read)return true;
+  cached_block=~0u;
+  uint8_t entry[8];if(!packed_read(read,64+index*8,entry,8))return false;
+  uint32_t pos=word(entry),remaining=word(entry+4)&0x7fffffffu;
+- const unsigned expected=std::min(4096u,unsigned(h.length-index*4096));unsigned output=0;
++ const unsigned expected=std::min(unsigned(h.block_bytes),unsigned(h.length-index*h.block_bytes));unsigned output=0;
+  if(word(entry+4)&0x80000000u){if(!packed_read(read,pos,decoded,expected))return false;output=expected;remaining=0;}
+  else if(h.deflate){
+   if(!packed_read(read,pos,compressed,remaining))return false;
+@@ -66,13 +70,13 @@
+   }
+  }
+  if(output!=expected||remaining)return false;
+- cached_block=index;cached_meta=h.meta;cached_reader=read;return true;
++ cached_block=index;cached_meta=h.meta;cached_size=h.block_bytes;cached_reader=read;return true;
+ }
+ }
+ bool gb_core_info(CoreRead read,uint32_t&length,uint32_t&checksum){Header h;if(!header(read,h))return false;length=h.length;checksum=h.crc;return true;}
+ bool gb_core_read(CoreRead read,uint32_t off,uint8_t*p,unsigned n){
+  Header h;if(!header(read,h)||off>h.length||n>h.length-off)return false;
+- while(n){unsigned index=off/4096,inside=off%4096,take=std::min(n,4096-inside);
++ while(n){unsigned index=off/h.block_bytes,inside=off%h.block_bytes,take=std::min(n,unsigned(h.block_bytes-inside));
+   if(!block(read,h,index))return false;std::memcpy(p,decoded+inside,take);off+=take;p+=take;n-=take;
+  }return true;
+ }

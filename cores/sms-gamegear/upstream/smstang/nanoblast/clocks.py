@@ -1,0 +1,5 @@
+ctx.addClock('sys_clk',27.0)
+ctx.addClock('backdrop.clk',64.8)
+ctx.addClock('main_pll.clkoutp',64.8)
+ctx.addClock('backdrop.hclk',74.25)
+ctx.addClock('hclk5',371.25)

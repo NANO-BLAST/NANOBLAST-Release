@@ -1,0 +1,306 @@
+{
+  "engine/MC8123.v": {
+    "source": "work/smstang/src/MC8123.v",
+    "sha256": "05403e9d1a4dd373e2a943f627c8cb0db5d6b1adfd991577f2d88535c2a26a04"
+  },
+  "engine/SEGASYS1_PRGDEC.v": {
+    "source": "work/smstang/src/SEGASYS1_PRGDEC.v",
+    "sha256": "df4320e2dc61912635ef19fc1f64e188375f25fc5b0c0ea7706377122b2ea766"
+  },
+  "engine/audiomix.v": {
+    "source": "work/smstang/src/audiomix.v",
+    "sha256": "8bfbd78701d6059606126000279e22181fc40f4b0f3a78895809c49ab6e2734f"
+  },
+  "engine/cheatcodes.sv": {
+    "source": "work/smstang/src/cheatcodes.sv",
+    "sha256": "fcd33aa5e56eb157f8f8cc6557580ae81f20cb029a02ae86161840e2d959a837"
+  },
+  "engine/compressor.sv": {
+    "source": "work/smstang/src/compressor.sv",
+    "sha256": "ffd8b21cb65ebaf6609f51e784c54e1041e397102dd2b6d97a0d11b285613de9"
+  },
+  "engine/dpram.v": {
+    "source": "work/smstang/src/dpram.v",
+    "sha256": "ce8ebde860f64a9e8d8bbf0017f88aaa84922bd03002d39479ac5b5b519027df"
+  },
+  "engine/hybrid_pwm_sd.v": {
+    "source": "work/smstang/src/hybrid_pwm_sd.v",
+    "sha256": "2445a0f2315532aa309999880eeb8cc5a111a2192715737a2bffdb85b585cfc1"
+  },
+  "engine/io.v": {
+    "source": "work/smstang/src/io.v",
+    "sha256": "8590d9db29569f771a1fabcaa9daa2a7bb01e41c60eba70bb0208dd86c071848"
+  },
+  "engine/jt89/jt89.v": {
+    "source": "work/smstang/src/jt89/jt89.v",
+    "sha256": "3b02642694ba7e7e7d700b2ba40196c0bbb6a2331dc75ca491a523b42518dc4a"
+  },
+  "engine/jt89/jt89_mixer.v": {
+    "source": "work/smstang/src/jt89/jt89_mixer.v",
+    "sha256": "fa1f72245effeadb00384a5f14a11baf34ffa3961e5e1c30388b66d9fe559cd4"
+  },
+  "engine/jt89/jt89_noise.v": {
+    "source": "work/smstang/src/jt89/jt89_noise.v",
+    "sha256": "d69d53a2cfdef6f8d96a024295daabe53ee45b60e7ee30ed7c6ba30f2bf59679"
+  },
+  "engine/jt89/jt89_tone.v": {
+    "source": "work/smstang/src/jt89/jt89_tone.v",
+    "sha256": "d4010a0356a92cf336e6c7cf5dcb05153c6a6c2f95a1527fcfee164dce8ec299"
+  },
+  "engine/jt89/jt89_vol.v": {
+    "source": "work/smstang/src/jt89/jt89_vol.v",
+    "sha256": "8cd408247294b4e0d58898e4185f96ca4367dc15273504831cbb1c447aabb0ca"
+  },
+  "engine/lightgun.sv": {
+    "source": "work/smstang/src/lightgun.sv",
+    "sha256": "87f482e88fc34868e35b15915ee6f0e2d0ea945a19b941434f13bede75d934b4"
+  },
+  "engine/parts.v": {
+    "source": "work/smstang/src/parts.v",
+    "sha256": "fec902b92efbbd86ffe91885d86f6b0160488038674d5271c8adaa0310654ef4"
+  },
+  "engine/spram.v": {
+    "source": "work/smstang/src/spram.v",
+    "sha256": "bea5b07290e0d99e98521aa40c06a36cfaa8408b9899c343d081b4243aee9618"
+  },
+  "engine/sprom.v": {
+    "source": "work/smstang/src/sprom.v",
+    "sha256": "435c6aad44295a07d53bc2eefdc72082562011ec80bcb62d3a6b24d11c148496"
+  },
+  "engine/system.v": {
+    "source": "work/smstang/src/system.v",
+    "sha256": "eb03b24c49c1182916bbc8d828f55f03edcc35722262fb274834d6bf32bcd8d1"
+  },
+  "engine/t80/t80.v": {
+    "source": "work/smstang/src/t80/t80.v",
+    "sha256": "d5bf43811048f70d0c21fdad6df4d9fd820e71fc5e86d0073ebe49b9d898cd4d"
+  },
+  "engine/t80/t80_alu.v": {
+    "source": "work/smstang/src/t80/t80_alu.v",
+    "sha256": "d65eef7de6888354ddfb67ad9dafbf69a36f227e143481cb9e75548ce5de90a1"
+  },
+  "engine/t80/t80_mcode.v": {
+    "source": "work/smstang/src/t80/t80_mcode.v",
+    "sha256": "c89fbf00f299448de531db6c773c4b02c12e733b555786ea57594970727adb82"
+  },
+  "engine/t80/t80_reg.v": {
+    "source": "work/smstang/src/t80/t80_reg.v",
+    "sha256": "ebec85d1536e0c97f41d434f77dc8be3713b6a6774e29802f27178ffd622e40b"
+  },
+  "engine/t80/t80pa.v": {
+    "source": "work/smstang/src/t80/t80pa.v",
+    "sha256": "8d38fb559d5a50680b2e6bb66bd336504065fe05de4379cf87b58ed62fa85d9c"
+  },
+  "engine/t80/t80s.v": {
+    "source": "work/smstang/src/t80/t80s.v",
+    "sha256": "41c52b9d999b1f5f805bd499062c2fadf2b2186b6c3b2d5b310ccf1a9e38a426"
+  },
+  "engine/vdp.v": {
+    "source": "work/smstang/src/vdp.v",
+    "sha256": "e8638f96734d2830c3067de380386c7d46d3fb0ef6b85517976a1d36cf71298d"
+  },
+  "engine/vdp_background.v": {
+    "source": "work/smstang/src/vdp_background.v",
+    "sha256": "7aba3d5510495bfe2f79bbb76ab8509515142e2ead119a2847b069f8c1ce0444"
+  },
+  "engine/vdp_cram.v": {
+    "source": "work/smstang/src/vdp_cram.v",
+    "sha256": "d1351ab307176cf8ddb00768d8a7bb9774136d3f2b20cc503dd0cf19ffbbd69a"
+  },
+  "engine/vdp_main.v": {
+    "source": "work/smstang/src/vdp_main.v",
+    "sha256": "ba5a7b0b7025e2d893292408a1e186d48aec793edd07c0ab1caa7c032ada9e7a"
+  },
+  "engine/vdp_sprite_shifter.v": {
+    "source": "work/smstang/src/vdp_sprite_shifter.v",
+    "sha256": "49ba6d1faff034ff9bf081ee9c1c7bdf4233efa837f7295b022cb16c3faaf467"
+  },
+  "engine/vdp_sprites.v": {
+    "source": "work/smstang/src/vdp_sprites.v",
+    "sha256": "afb88b36634b2f684d6fda6b0e2451cbc1258bb962ab796359772f75a0ad82b4"
+  },
+  "engine/video.v": {
+    "source": "work/smstang/src/video.v",
+    "sha256": "87575ec3c89ca70ffa89c49675d42bf00d474b25843e11d11fb9e245e354a2de"
+  },
+  "rtl/sms_nano_ce.sv": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_ce.sv",
+    "sha256": "2668e650d9d03c4ea17e67c704fc4d38c2f12515a4fd066edb387951c6d541c0"
+  },
+  "rtl/sms_nano_pll.v": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_pll.v",
+    "sha256": "dc2fbcc75bc7fc2a776e60d33d9501dd6c33e207067c931e9a4d91f613bb05bc"
+  },
+  "rtl/sms_nano_startup.sv": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_startup.sv",
+    "sha256": "cb514a59e2b00c0bb7c1dda566176a7ea5dad3fb95692ebeab8e6483701f6207"
+  },
+  "rtl/sms_nano_hdmi.sv": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_hdmi.sv",
+    "sha256": "a15f07077ed30be42cf62b9cc541c9a2013897962298886784059a960bef7141"
+  },
+  "rtl/sms_nano_sdram.sv": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_sdram.sv",
+    "sha256": "e8762b5912a0750ee4446fb9e878acb773def65bd3cbd005b606d8de1a3a0abd"
+  },
+  "rtl/sms_nano_core.sv": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_core.sv",
+    "sha256": "327e9a4d42af73c806f8c764c357406da06208d5471d1857c5044f9c3f4b374e"
+  },
+  "rtl/sms_nano_raster.v": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_raster.v",
+    "sha256": "27f2dea3cce6ff9e970fb99d70156490265010065b281e93d9511cf28e413211"
+  },
+  "rtl/sms_nano_memory.sv": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_memory.sv",
+    "sha256": "aa999ea794c0d25a5930837f2865def566acf7cf745cc63fe86d62642a470c68"
+  },
+  "rtl/sms_nano_top.sv": {
+    "source": "work/smstang/nanoblast/rtl/sms_nano_top.sv",
+    "sha256": "2b82c6b370795424ac40dde54f79001ab7feef24fa2b2532b4db4b5bfd845305"
+  },
+  "shared/cdc_mailbox.sv": {
+    "source": "work/nanoblast/src/cdc_mailbox.sv",
+    "sha256": "58ed34a114e8736041a01491b1bd4042a7ab9c4eb31f073c848b09e78336d4c7"
+  },
+  "shared/reset_release.sv": {
+    "source": "work/nanoblast/src/reset_release.sv",
+    "sha256": "521c2ee73dc38c9a991775272bacd57ecd4912902e023c946f3d12250bfc3391"
+  },
+  "shared/menu_background.sv": {
+    "source": "work/nanoblast/src/menu_background.sv",
+    "sha256": "f612488ffb8bf46111bca54da12bbe2b3f3495e91ebf329b1ba2f8e4aaefdbe5"
+  },
+  "shared/controller_snes.v": {
+    "source": "work/nanoblast/src/controller_snes.v",
+    "sha256": "7b12fcfe6c2060ef2970cb76c24952cb98b75cf09dab8c42e8a0b97013054cff"
+  },
+  "shared/controller_ds2.sv": {
+    "source": "work/nanoblast/src/controller_ds2.sv",
+    "sha256": "c6e49942cbd0fcd999de4a6ed2ba2f7bc819a95fadc9e8c96eccd34fbbab5dc5"
+  },
+  "shared/dualshock_controller.v": {
+    "source": "work/nanoblast/src/dualshock_controller.v",
+    "sha256": "096b8a8b78d3ab3f225806f1566057f3e6b303068c45fcbf6e9a6da178c21ce7"
+  },
+  "shared/hw_uart.v": {
+    "source": "work/nanoblast/src/hw_uart.v",
+    "sha256": "8e6401648820efb69d1e02fcae974a550cd0a97a1291310d7e6ac4322cecb396"
+  },
+  "shared/iosys/mcu_uart.v": {
+    "source": "work/nanoblast/src/iosys/mcu_uart.v",
+    "sha256": "0befe439cf30e6e88d03516f60e98c235bcc5254c3dd053a76e14fa85d6a19c3"
+  },
+  "shared/iosys/nanoblast_iosys.sv": {
+    "source": "work/nanoblast/src/iosys/nanoblast_iosys.sv",
+    "sha256": "feb48349d7e167a19cf6da45d6ca6f632c841b33412a3e1ee79cfc777a28dc07"
+  },
+  "shared/iosys/nanoblast_menu_link.sv": {
+    "source": "work/nanoblast/src/iosys/nanoblast_menu_link.sv",
+    "sha256": "c8556254778aeece9cc7692c267e2fd1d57ae375d2919f8dd51d586f3bed93da"
+  },
+  "shared/iosys/nanoblast_sd_spi.sv": {
+    "source": "work/nanoblast/src/iosys/nanoblast_sd_spi.sv",
+    "sha256": "bd1189f20c733910896770531be6ab3bfe972719302ab6407cf13881bdc1af14"
+  },
+  "shared/iosys/gowin_dpb_menu.v": {
+    "source": "work/nanoblast/src/iosys/gowin_dpb_menu.v",
+    "sha256": "270e36b37386103cd776f2d2e9c464598ec5b975055eb36ca12901941d5e2add"
+  },
+  "shared/nano20k/gowin_pll_hdmi.v": {
+    "source": "work/nanoblast/src/nano20k/gowin_pll_hdmi.v",
+    "sha256": "1fc288389af113cff5080ab2d4ab7f253d23666da8748c598265c305796490fe"
+  },
+  "shared/hdmi2/source_product_description_info_frame.sv": {
+    "source": "work/nanoblast/src/hdmi2/source_product_description_info_frame.sv",
+    "sha256": "893269fdccd2dc147e8570519f35308ac5e5460ad7f54bf673b3c31e9a8259de"
+  },
+  "shared/hdmi2/tmds_channel.sv": {
+    "source": "work/nanoblast/src/hdmi2/tmds_channel.sv",
+    "sha256": "6f08a9fd1ed88c6e375c676176415c85fd3b6b248a4ac13804a2f796193c49d5"
+  },
+  "shared/hdmi2/packet_picker.sv": {
+    "source": "work/nanoblast/src/hdmi2/packet_picker.sv",
+    "sha256": "6d6bfd834d689b7a0b043a25ef264675066ebc3a6fa55bd0c8ac49a0b4fde3c6"
+  },
+  "shared/hdmi2/audio_sample_packet.sv": {
+    "source": "work/nanoblast/src/hdmi2/audio_sample_packet.sv",
+    "sha256": "0e3a35ccb3e934eecfcd3916c5dac9ef269abea21472d66ebd2660a9d25e6a13"
+  },
+  "shared/hdmi2/audio_clock_regeneration_packet.sv": {
+    "source": "work/nanoblast/src/hdmi2/audio_clock_regeneration_packet.sv",
+    "sha256": "729df6b9ca9d018ed0fdfae98aa2b3455131de04b7257afc97383a0036e03881"
+  },
+  "shared/hdmi2/audio_info_frame.sv": {
+    "source": "work/nanoblast/src/hdmi2/audio_info_frame.sv",
+    "sha256": "dedd552fa988d9e2875bdadc54f3c08d5041d54637da1ff565d46078eeb2ea89"
+  },
+  "shared/hdmi2/serializer.sv": {
+    "source": "work/nanoblast/src/hdmi2/serializer.sv",
+    "sha256": "02e26b9dd11aca44f4dc9498321115b66f927580a7b87ffe9bdc96bd62f620b0"
+  },
+  "shared/hdmi2/packet_assembler.sv": {
+    "source": "work/nanoblast/src/hdmi2/packet_assembler.sv",
+    "sha256": "00d143e3b4226cb8ac7418bab35b9ea6f3a963e81fd0f2f7f3109844f4bde2c6"
+  },
+  "shared/hdmi2/hdmi.sv": {
+    "source": "work/nanoblast/src/hdmi2/hdmi.sv",
+    "sha256": "6841bb62dccf8f39ee2363969675200ef66807b5daca1b7d56302ada59fa3534"
+  },
+  "shared/hdmi2/auxiliary_video_information_info_frame.sv": {
+    "source": "work/nanoblast/src/hdmi2/auxiliary_video_information_info_frame.sv",
+    "sha256": "c151e2675ad97ef36254044e42657f2d758512d305040137859f9b8806135f64"
+  },
+  "opll.v": {
+    "source": "work/sms-vhdl/opll.v",
+    "sha256": "19f4e776c1bd31edcda11118a1c76f7a17ef079c286522365179eab39b6b4a51"
+  },
+  "shared/textdisp.v": {
+    "source": "work/mister-menu-test/textdisp.v",
+    "sha256": "cb1a2d0e82346e539583aff3c6fe0d6c2f5703c08d07da606b9da39b7d47410c"
+  },
+  "constraints/board.cst": {
+    "source": "work/nanoblast-native.cst",
+    "sha256": "7921ba273f07df2770d222b8246ce0a354ff86d5104b2c17368db65c47f805f8"
+  },
+  "tests/control_tb.sv": {
+    "source": "work/smstang/nanoblast/tests/control_tb.sv",
+    "sha256": "b003642b2c71cdea18cd6c48fefcdfa0a76a741ae4f8a5153248e72a80500ea2"
+  },
+  "tests/loader_tb.sv": {
+    "source": "work/smstang/nanoblast/tests/loader_tb.sv",
+    "sha256": "906a0253bb7cd6e53aab80fe2469bee03ae9dc3eb2b0127602ab8ed2b287f934"
+  },
+  "tests/integration_tb.sv": {
+    "source": "work/smstang/nanoblast/tests/integration_tb.sv",
+    "sha256": "93a5c662387bcdf8e24c3f3edc185c3bd82e4c892b6617bbe6ee3f8b3ef23371"
+  },
+  "tests/sdram_tb.sv": {
+    "source": "work/smstang/nanoblast/tests/sdram_tb.sv",
+    "sha256": "bdc1c931114da81d831bf44496a6ab06edf24c26a034aed065d828b72cdb3f42"
+  },
+  "tests/startup_tb.sv": {
+    "source": "work/smstang/nanoblast/tests/startup_tb.sv",
+    "sha256": "0d96a3b92371ebd768117c785a320ba3db82eb977f147a2f512235920a78f848"
+  },
+  "tests/core_tb.sv": {
+    "source": "work/smstang/nanoblast/tests/core_tb.sv",
+    "sha256": "3895e1c810e401937caebfaa868c16f20b150830ca7552a52236039e5ae45725"
+  },
+  "tests/video_tb.sv": {
+    "source": "work/smstang/nanoblast/tests/video_tb.sv",
+    "sha256": "a4b18d67ea95e7af170e5edb14e639749eda75ed2e4c2af4769b147d0b89a5d0"
+  },
+  "pack-nanoblast.py": {
+    "source": "work/pack-nanoblast.py",
+    "sha256": "95e6bc4ed564932bc8056a58807b1c80eb661b5b7ee9429cd97fe774ac7984c6"
+  },
+  "vendor-hdmi-io-fuses.json": {
+    "source": "work/vendor-hdmi-io-fuses.json",
+    "sha256": "3a2f54a827b33371b459519e610605de857c2ebe9e2c10ace02bab44c42567b1"
+  },
+  "gowin-slang-primitives.v": {
+    "source": "work/gowin-slang-primitives.v",
+    "sha256": "024829c6a7619499bb80632c956c96dc1098e6608adde780c8f6390736423a63"
+  }
+}

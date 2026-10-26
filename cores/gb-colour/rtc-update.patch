@@ -1,0 +1,72 @@
+--- before/rtl/nanoblast_gbc_top.sv
++++ after/rtl/nanoblast_gbc_top.sv
+@@ -65,12 +65,14 @@
+ else cart_ready_latched<=cart_ready;
+ nanoblast_gbc_ce clocks(.clk(clk),.resetn(resetn),.enable(!running||(!overlay&&!bg_enable&&bg_req==bg_ack)),
+  .memory_ready(!running||cart_ready_latched),.ce(ce),.ce_n(ce_n),.ce_2x(ce_2x),.paused(paused));
++wire rtc_ce;
++nanoblast_gbc_rtc_tick rtc_clock(.clk(clk),.resetn(resetn),.ce_32k(rtc_ce));
+ wire[11:0]joy=pad1|ds1|pad2|ds2|hid1|hid2;
+ wire[7:0]buttons={joy[3],joy[2],joy[0]|joy[9],joy[8],joy[5],joy[4],joy[6],joy[7]};
+ wire[22:0]cart_addr;wire[7:0]cart_din,cart_dout;wire cart_phase,cram_rd,cram_wr;
+ wire[15:0]audio_l,audio_r,debug_pc;wire debug_boot;wire[7:0]debug_lcdc;
+ wire lcd_ce,lcd_on,lcd_vs;wire[14:0]lcd_pixel;wire[1:0]lcd_shade,lcd_mode;
+-nanoblast_gbc_engine engine(.clk_sys(clk),.reset(gb_reset),.loading(loading),.ce(ce),.ce_n(ce_n),.ce_2x(ce_2x),.ce_32k(1'b0),.buttons(buttons),
++nanoblast_gbc_engine engine(.clk_sys(clk),.reset(gb_reset),.loading(loading),.ce(ce),.ce_n(ce_n),.ce_2x(ce_2x),.ce_32k(rtc_ce),.buttons(buttons),
+  .ioctl_wr(ioctl_wr),.ioctl_addr(ioctl_addr),.ioctl_dout(ioctl_dout),.mem_rdata(cart_dout),.mem_addr(cart_addr),.mem_wdata(cart_din),
+  .mem_read_phase(cart_phase),.mem_cram_read(cram_rd),.mem_cram_write(cram_wr),.isGBC(cgb),.speed(speed),
+  .debug_pc(debug_pc),.debug_boot(debug_boot),.debug_lcdc(debug_lcdc),.lcd_clkena(lcd_ce),.lcd_data(lcd_pixel),.lcd_data_gb(lcd_shade),
+@@ -120,6 +122,7 @@
+  10:debug_value={8'd0,ds1,pad1};
+  11:debug_value=0;
+  12:debug_value=32'h534d5331; // SMS1: shared NES/SMS controller baseline.
++ 13:debug_value=32'h52544331; // RTC1: running MBC3 clock; no battery persistence.
+  default:debug_value=0;
+ endcase
+ assign led=~{fault,running};
+--- before/engine/mappers/mbc3.v
++++ after/engine/mappers/mbc3.v
+@@ -180,6 +180,16 @@
+ 	reset_1 <= reset;
+ 
+ 	if(!reset_1 && reset) begin
++        // NANOBLAST currently has no battery/RTC save-file service. Start
++        // each newly loaded cartridge deterministically; game writes set it.
++        rtc_subseconds <= 0;
++        rtc_seconds <= 0; rtc_minutes <= 0; rtc_hours <= 0; rtc_days <= 0;
++        rtc_seconds_latch <= 0; rtc_minutes_latch <= 0;
++        rtc_hours_latch <= 0; rtc_days_latch <= 0;
++        rtc_overflow <= 0; rtc_overflow_latch <= 0;
++        diffSeconds <= 0; rtc_change <= 0;
++        RTC_timestampOut <= 0; RTC_timestampNew_1 <= RTC_timestampNew;
++        RTC_saveLoaded <= 0;
+ 		rtc_halt  <= 1'b0;
+ 		RTC_inuse <= 1'b0;
+ 		rtc_latch <= 1'b0;
+--- before/firmware/core/gb.cpp
++++ after/firmware/core/gb.cpp
+@@ -28,7 +28,7 @@
+  return out;
+ }
+ // CGB-only cartridges require an explicitly advertised Colour FPGA engine.
+-// RTC and uncommon mappers remain unsupported by the NANOBLAST integration.
++// Timer cartridges additionally require the RTC1 clock capability.
+ int loadgb(const char *fname){
+  const char *ext=std::strrchr(fname,'.');
+  if(!ext||(strcasecmp(ext,".gb")&&strcasecmp(ext,".gbc"))){overlay_message("Choose a Game Boy .gb/.gbc file",1);return FR_INVALID_NAME;}
+@@ -44,8 +44,14 @@
+    f_close(&fcore);overlay_message("Game Boy Colour core required",1);return FR_INVALID_PARAMETER;
+   }
+  }
++ if(type==0x0f||type==0x10){
++  uint32_t capability=0;
++  if(!get_fpga_debug(13,&capability)||capability!=0x52544331){
++   f_close(&fcore);overlay_message("MBC3 clock core required",1);return FR_INVALID_PARAMETER;
++  }
++ }
+  const bool supported=type==0||type==8||type==9||(type>=1&&type<=3)||type==5||type==6||
+- (type>=0x11&&type<=0x13)||(type>=0x19&&type<=0x1e);
++ (type>=0x0f&&type<=0x13)||(type>=0x19&&type<=0x1e);
+  const bool mapper_size_ok=(type==0||type==8||type==9)?rom==0:
+   (type==5||type==6)?rom<=3:(type>=0x19&&type<=0x1e)?rom<=7:rom<=6;
+  uint8_t check=0;for(unsigned i=0x134;i<=0x14c;i++)check=check-fbuf[i]-1;

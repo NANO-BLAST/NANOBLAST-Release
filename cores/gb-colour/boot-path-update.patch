@@ -1,0 +1,33 @@
+--- before/build_native.py
++++ after/build_native.py
+@@ -5,7 +5,11 @@
+ O.mkdir(exist_ok=True)
+ (O/'boot.hex').write_bytes((P/'assets/boot.hex').read_bytes())
+ (O/'gb-mister.sdc').write_bytes((P/'constraints/gb-mister.sdc').read_bytes())
+-sv=[p for p in sorted((P/'rtl').glob('*')) if p.suffix in ('.v','.sv')]
++# Gowin's synthesis child resolves readmemh relative to its project folder,
++# even after Tcl cd. Generate a native-only source with an absolute init path.
++boot_source=O/'native-gb_rams.sv'
++boot_source.write_text((P/'rtl/gb_rams.sv').read_text().replace('"boot.hex"','"'+str((P/'assets/boot.hex').resolve())+'"'))
++sv=[boot_source if p.name=='gb_rams.sv' else p for p in sorted((P/'rtl').glob('*')) if p.suffix in ('.v','.sv')]
+ sv += [E/n for n in ['gb.v','video.v','sprites.v','sprites_extra.v','sprites_extra_store.v','timer.v','hdma.v','link.v','cart.v']]
+ sv += sorted((E/'mappers').glob('*.v'))+sorted((E/'mappers').glob('*.sv'))
+ vhdl=[E/n for n in ['bus_savestates.vhd','reg_savestates.vhd','T80/T80_Pack.vhd','T80/T80_ALU.vhd','T80/T80_MCode.vhd','T80/T80_Reg.vhd','T80/T80.vhd','T80/GBse.vhd','gbc_snd.vhd']]
+@@ -30,11 +34,15 @@
+ log_text=(O/'gowin-build.log').read_text()
+ if r.returncode == 0:
+  for line in log_text.splitlines():
+-  if ('EX1998' in line and '/engine/cart.v' in line) or 'ERROR ' in line:
++  if ('EX1998' in line and '/engine/cart.v' in line) or 'ERROR ' in line or 'Cannot open file' in line:
+    raise RuntimeError('Native cartridge build error: '+line)
+ if r.returncode == 0:
+  import re,html
+  resources=html.unescape(re.sub('<[^>]+>',' ',(O/'impl/gwsynthesis/nanoblast_gb_mister_syn_resource.html').read_text()))
+- for required in ['map_mbc1','map_mbc2','map_mbc3','map_mbc5','rtc_clock']:
++ for required in ['map_mbc1','map_mbc2','map_mbc3','map_mbc5','rtc_clock','boot_rom']:
+   assert required in resources, 'Missing native cartridge logic: '+required
++ raw_resources=(O/'impl/gwsynthesis/nanoblast_gb_mister_syn_resource.html').read_text()
++ boot_row=raw_resources.split('|--boot_rom',1)[1].split('</tr>',1)[0]
++ cells=re.findall(r'<td align\s*=\s*"center">([^<]+)</td>',boot_row)
++ assert len(cells)==7 and cells[4]=='2', 'Replacement boot ROM must occupy two BSRAM blocks'
+ print('Gowin exit' ,r.returncode,'log',O/'gowin-build.log');sys.exit(r.returncode)

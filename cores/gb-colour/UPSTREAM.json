@@ -1,0 +1,8 @@
+{
+  "upstream": "https://github.com/MiSTer-devel/Gameboy_MiSTer",
+  "commit": "f6796f3a021db61f804c3151678941ce4d74a3b9",
+  "bundled_release": "Gameboy_20260603.rbf",
+  "hardware": "Tang Nano 20K / NANOBLAST",
+  "board_test": "pending",
+  "adaptation_patch": "upstream-engine.patch"
+}
