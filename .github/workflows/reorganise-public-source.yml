@@ -1,0 +1,51 @@
+name: Reorganise public source once
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  source:
+    if: github.repository == 'NANO-BLAST/NANOBLAST-Release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Apply checked source snapshot and candidate branch
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          import os,zipfile,hashlib,subprocess,json
+          assert os.environ.get('GITHUB_REPOSITORY')=='NANO-BLAST/NANOBLAST-Release'
+          root=Path.cwd();archive=root/'repository-update.zip'
+          assert hashlib.sha256(archive.read_bytes()).hexdigest()=='985ae8c9d08d9ee14b5a6a83ec929303ed000808804bcf7be65e67792ae3293f'
+          old={'LICENSE': 'c53a65c2fd561c87eaabf1072ef5dcab8653042bc15308465f52413585eb6271', 'CHANGELOG.md': '347de9004507257629e4239ad341d34d8d98d947a52cae5ff8187c0eb67c3630', 'NANOBLAST-v0.1.0-images.zip': '764ce136aa2165d71cfdebf3a4560ce367f14b7f4e8c946d7d1e13fd49cdb5fc', 'NANOBLAST-v0.1.0-source.zip': '3c6eacb4b014a046f1bda396f30311e8e05c2fd8cd23ea07822ab02b3b638444', 'README.md': 'db2f32efbb41b73cfab30e66b247608311572036ab5bcacba7ae3f70fea3f118', 'RELEASE.json': '657a30e656dd5de1a61d4377a97464a0ca8f092d1cbdfedb6872af2df38e73a5', 'SHA256SUMS': '5b249931d9264345c135bbceb11be3f8d7d9edf679a1c42cb026e8e46ccdfadf'}
+          allowed=set(old)|{'repository-update.zip','.github/workflows/reorganise-public-source.yml'}
+          def git(*args):return subprocess.check_output(['git',*args],text=True).strip()
+          tracked=set(git('ls-files').splitlines());assert tracked==allowed, 'Repository changed: inspect before applying'
+          for name,digest in old.items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest, 'Original file changed: '+name
+          branch='codex/compressed-cores'
+          assert not git('ls-remote','--heads','origin','refs/heads/'+branch), 'Candidate branch already exists'
+          z=zipfile.ZipFile(archive);entries=z.namelist()
+          for n in entries:
+           p=Path(n);assert p.parts[0] in ('stable','candidate') and not p.is_absolute() and '..' not in p.parts and '.git' not in p.parts
+           assert z.getinfo(n).file_size<16000000
+          contents={n:z.read(n) for n in entries}
+          def apply(label):
+           for name,b in contents.items():
+            p=Path(name)
+            if p.parts[0]!=label:continue
+            target=root.joinpath(*p.parts[1:]);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(b)
+           manifest=json.loads((root/'SOURCE_SHA256.json').read_text())
+           for name,wanted in manifest.items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==wanted,name
+          def run(*args):subprocess.check_call(['git',*args])
+          run('config','user.name','github-actions[bot]');run('config','user.email','41898282+github-actions[bot]@users.noreply.github.com')
+          run('rm','--',*sorted(allowed))
+          apply('stable');run('add','--all');run('commit','-m','Expose the v0.1.0 source in organised folders');run('push','origin','HEAD:main')
+          run('switch','-c',branch)
+          run('rm','--','firmware/storage/gb_core_asset.cpp','firmware/storage/gb_core_asset.h')
+          apply('candidate');run('add','--all');run('commit','-m','Share one compressed asset format across all four cores');run('push','origin','HEAD:'+branch)
+          print('Public source reorganisation complete; compressed candidate on '+branch)
+          PYCODE
