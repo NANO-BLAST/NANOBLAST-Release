@@ -1,0 +1,44 @@
+{
+  "version": "solid-loading-development",
+  "assets": [
+    {
+      "core_id": 1,
+      "offset": 2101248,
+      "bytes": 333256,
+      "meta": 1393558769,
+      "file": "nes.core",
+      "sha256": "8bc74a92c4a274862f1b7909cd07c8798c40e05d90dd821b9d74e10bb7e2e5a5",
+      "image_sha256": "97fd6c5072d22f5f5564e62c97bd15bd16c3099d80a6568da0f719fa5d7f6026"
+    },
+    {
+      "core_id": 5,
+      "offset": 2437120,
+      "bytes": 317320,
+      "meta": 2673772498,
+      "file": "sms-gamegear.core",
+      "sha256": "bc1a39bfc2e08859b5d0a56fd962fc5da3b818afedbb07df14dff0b71170ab1b",
+      "image_sha256": "9b3c4a710380e6d58b5a457fb9fa942f65967563d936fff3fd2000bad296f7d0"
+    },
+    {
+      "core_id": 7,
+      "offset": 2756608,
+      "bytes": 351356,
+      "meta": 4112977715,
+      "file": "gb-colour.core",
+      "sha256": "cda9a8dcbae099819672edd60cdaf1e46305df856738a078e22bc589d0dd1b88",
+      "image_sha256": "9b54ff415fc58dfc6ef2d6ab7237cfea553611332070c818cf1d478a9d02d4b0"
+    },
+    {
+      "core_id": 2,
+      "offset": 3108864,
+      "bytes": 441232,
+      "meta": 3971095327,
+      "file": "snes-experimental.core",
+      "sha256": "cc9e7c867e5baff687b556a12338847fadbae64e07333985ee3556b5613e3ee5",
+      "image_sha256": "af2a281b95acd77b35ea9bbf6cb4d8eb3d85ea42778dd99ca0954459c5a1e232"
+    }
+  ],
+  "layout_revision": 2486639545,
+  "bank_end": 3551232,
+  "hardware_tested": false
+}

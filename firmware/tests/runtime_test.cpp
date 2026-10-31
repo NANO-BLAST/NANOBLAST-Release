@@ -96,9 +96,20 @@ const char *snes_apu_diagnostic(){return "APU test capture";}
 unsigned delayed_core_queries=0;
 int get_core_id(){if(delayed_core_queries){--delayed_core_queries;ticks+=200;return -1;}return reply;}
 uint64_t bflb_mtimer_get_time_ms(){return ticks+=10;}void delay(int n){ticks+=n;}
-int load_rom(const char*){core_running=rom_result==0;return rom_result;}
+bool game_loading=false;
+void overlay_game_loading(bool enabled){game_loading=enabled;}
+std::string loaded_rom,chosen_rom="game.sms";
+int load_rom(const char*path){
+ loaded_rom=path;
+ assert(game_loading&&std::string(screen[13]+8,15)=="Loading game...");
+ for(unsigned y=0;y<28;++y)if(y!=13)for(char c:screen[y])assert(c==' ');
+ const uint32_t panel=0x03300000u|(15u<<15)|(12u<<10)|(29u<<5)|2u;
+ const std::vector<uint8_t> command={0xaa,0,5,0x0e,uint8_t(panel>>24),uint8_t(panel>>16),uint8_t(panel>>8),uint8_t(panel)};
+ assert(std::search(bytes.begin(),bytes.end(),command.begin(),command.end())!=bytes.end());
+ core_running=rom_result==0;return rom_result;
+}
 core_info *find_core_by_id(unsigned id){static core_info nes{1,"nestang.bin","nes",load_rom},sms{5,"smstang.bin","sms",load_rom};return id==1?&nes:id==5?&sms:nullptr;}
-bool FileChooser::choose_file(std::string &s){assert(rootdir==std::string(drv)+"/" && curdir==rootdir&&menu_platform);s=curdir+"game.sms";return !cancel;}
+bool FileChooser::choose_file(std::string &s){assert((rootdir==std::string(drv)+"/sms"||rootdir==std::string(drv)+"/nes") && curdir==rootdir&&menu_platform);s=curdir+"/"+chosen_rom;return !cancel;}
 void get_joypad_states(uint16_t*a,uint16_t*b,uint16_t*c,uint16_t*d){if(loop_test)throw 1;*a=*b=*c=*d=0;}
 int main(){
  TextFrames buffers;Runtime r(buffers);
@@ -123,8 +134,8 @@ int main(){
  import_ok=false;assert(r.browse_games(5)==nanoblast::BrowseResult::Failed&&imports==1);
  import_ok=true;
  cancel=true;assert(r.browse_games(5)==nanoblast::BrowseResult::Cancelled&&imports==2);
- cancel=false;rom_result=1;assert(r.browse_games(5)==nanoblast::BrowseResult::Failed&&!core_running);
- rom_result=0;assert(r.browse_games(5)==nanoblast::BrowseResult::Loaded&&core_running);
+ cancel=false;rom_result=1;assert(r.browse_games(5)==nanoblast::BrowseResult::Failed&&!core_running&&!game_loading);
+ rom_result=0;assert(r.browse_games(5)==nanoblast::BrowseResult::Loaded&&core_running&&!game_loading);
  assert(imports==2); // A verified imported game is not read again this boot.
  unsigned old_staged=staged;built_in=true;
  assert(r.configure_core(5,true)==nanoblast::SwitchResult::Loaded&&asset_saves==1&&asset_activations==0&&staged==old_staged&&!last_verify);

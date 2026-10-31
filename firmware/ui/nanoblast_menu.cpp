@@ -17,7 +17,7 @@ unsigned Menu::count()const{
  if(page_==Page::Home)return running_?4:3;
  if(page_==Page::Settings)return 5;
  if(page_==Page::Clock)return 6;
- if(page_==Page::Advanced)return 4;
+ if(page_==Page::Advanced)return 5;
  return experimental_?4:3;
 }
 void Menu::show(){visible_=true;page_=Page::Home;choice_=0;message_="";p_.overlay(true);redraw();}
@@ -46,6 +46,7 @@ void Menu::redraw(){
   centered(p_,first,debug_?"[x] Debug mode":"[ ] Debug mode");
   centered(p_,first+1,verify_core_?"[x] Verify core":"[ ] Verify core");
   centered(p_,first+3,oled_?"[x] OLED Mode (Beta)":"[ ] OLED Mode (Beta)");
+  centered(p_,first+4,"USB ROM transfer: SELECT+L");
   centered(p_,first+2,experimental_?"[x] Experimental cores":"[ ] Experimental cores");
  }
  p_.selection(true,1,first+choice_,31,first+choice_);
@@ -89,6 +90,7 @@ void Menu::select(){
   else if(choice_==1){verify_core_=!verify_core_;p_.verify_core(verify_core_);message_=verify_core_?"Core readback enabled":"Core readback disabled";}
   else if(choice_==2)experimental_=!experimental_;
   else if(choice_==3){oled_=!oled_;p_.oled(oled_);}
+  else if(choice_==4){request_usb_transfer();return;}
  }else{
   unsigned selected=cores[choice_];
   if(selected==core_){page_=Page::Home;choice_=0;}
@@ -113,8 +115,27 @@ void Menu::adjust_clock(int direction){
  if(clock_draft_.year%4==0)month_days[1]=29;
  unsigned limit=month_days[clock_draft_.month-1];if(clock_draft_.day>limit)clock_draft_.day=choice_==2&&direction>0?1:limit;
 }
-void Menu::input(uint16_t buttons){
+void Menu::request_usb_transfer(){
+ // Match the Advanced-menu action: a running game must never share SD access
+ // with the transfer service. Runtime also flushes saves/checkpoints the clock.
+ if(running_){
+  if(!visible_)show();
+  message_="Restart before USB transfer";redraw();
+ }else if(!p_.usb_transfer()){
+  message_="USB transfer unavailable";redraw();
+ }
+}
+void Menu::input(uint16_t buttons){input(buttons,0,0,0);}
+void Menu::input(uint16_t joy1,uint16_t joy2,uint16_t hid1,uint16_t hid2){
+ // Select is bit 2, L is bit 10 in the common SNES controller format.
+ // Check each pad before merging normal navigation, never across two pads.
+ constexpr uint16_t transfer_keys=0x0404;
+ const bool transfer=joy1==transfer_keys||joy2==transfer_keys||hid1==transfer_keys||hid2==transfer_keys;
+ const bool transfer_pressed=transfer&&!usb_shortcut_held_;
+ usb_shortcut_held_=transfer;
+ const uint16_t buttons=joy1|joy2|hid1|hid2;
  uint16_t pressed=buttons&~previous_;previous_=buttons;
+ if(transfer){if(transfer_pressed)request_usb_transfer();return;}
  const uint16_t shortcut=select_start_?0x0c:0x84;
  if(buttons==shortcut){if(pressed&&!visible_)show();return;}
  if(!visible_)return;

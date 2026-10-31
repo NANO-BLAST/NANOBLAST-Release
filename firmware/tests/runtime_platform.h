@@ -15,6 +15,7 @@ struct FileChooser {
 void fpga_tx_header(int,int);void fpga_tx_byte(uint8_t);
 void overlay_clear();void overlay_cursor(unsigned,unsigned);void overlay_printf(const char*,...);
 void overlay(int);void overlay_message(const char*,int);
+void overlay_game_loading(bool);
 int f_stat(const char*,FILINFO*);bool fpga_program(const char*);
 int get_core_id();uint64_t bflb_mtimer_get_time_ms();void delay(int);
 core_info *find_core_by_id(unsigned);

@@ -1,65 +1,28 @@
-#define _GNU_SOURCE
-#include <string.h>      // for strcasestr
-
+#include <cstring>
+#include <strings.h>
+#ifdef NANOBLAST_NES_LOADER_HOST_TEST
+#include "../tests/sms_loader_platform.h"
+#else
 #include "utils.h"
 #include "cores.h"
 #include "overlay.h"
+#endif
+#include "../storage/rom_file.h"
 
-// Load a NES ROM
-// return 0 if successful
-int loadnes(const char *fname) {
-    unsigned int off = 0, br, total = 0;
-    unsigned int size;
-    int r = 1;
-    DEBUG("loadnes start\n");
-
-    // check extension .nes
-    char *p = strcasestr(fname, ".nes");
-    if (p == NULL) {
-        overlay_message("Only .nes supported", 1);
-        goto loadnes_end;
-    }
-
-    r = f_open(&fcore, fname, FA_READ);
-    if (r) {
-        overlay_status("Cannot open file");
-        goto loadnes_end;
-    }
-    size = get_file_size(fname);
-
-    // load actual ROM
-    set_loading_state(1);
-    core_running = false;
-
-    // Send rom content
-    if ((r = f_lseek(&fcore, off)) != FR_OK) {
-        overlay_status("Seek failure");
-        goto loadnes_snes_end;
-    }
-
-
-    do {
-        if ((r = f_read(&fcore, fbuf, 1024 /*BLOCK_SIZE*/, &br)) != FR_OK)
-            break;
-        // start rom loading command
-        send_fbuf_data(br);
-        taskYIELD();                // allow gamepad polling to run
-        total += br;
-        if ((total & 0xfff) == 0) {	// display progress every 4KB
-            //              01234567890123456789012345678901
-            overlay_status("%d/%dK                          ", total >> 10, size >> 10);
-        }
-    } while (br == 1024 /*BLOCK_SIZE*/);
-
-    DEBUG("loadnes: %d bytes\n", total);
-    overlay_status("Success");
-    core_running = true;
-
-    overlay(0);		// turn off OSD
-
-loadnes_snes_end:
-    set_loading_state(0);   // turn off game loading, this starts the core
-    f_close(&fcore);
-loadnes_end:
-    return r;
+int loadnes(const char *fname){
+ RomFile file;int result=file.open(fname,1);
+ if(result!=FR_OK){if(file.is_zip())overlay_message(file.error(),1);return result;}
+ const char*extension=std::strrchr(file.name(),'.');
+ if(!extension||strcasecmp(extension,".nes")){overlay_message("Only .nes supported",1);return FR_INVALID_NAME;}
+ const unsigned size=file.size();unsigned total=0;core_running=false;set_loading_state(1);
+ while(total<size){
+  unsigned got=0,n=size-total>1024?1024:size-total;
+  result=file.read(fbuf,n,&got);
+  if(result!=FR_OK||got!=n){if(result==FR_OK)result=FR_DISK_ERR;break;}
+  send_fbuf_data(got);total+=got;
+  if(!(total&0xfff))overlay_status("Loading NES %u/%uK",total>>10,size>>10);
+ }
+ const int closed=file.close();if(result==FR_OK)result=closed;
+ set_loading_state(0);if(result!=FR_OK)return result;
+ core_running=true;overlay(0);return FR_OK;
 }

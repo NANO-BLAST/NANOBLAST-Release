@@ -99,13 +99,15 @@ const char *snes_apu_diagnostic(){return "APU test capture";}
 unsigned delayed_core_queries=0;
 int get_core_id(){if(delayed_core_queries){--delayed_core_queries;ticks+=200;return -1;}return reply;}
 uint64_t bflb_mtimer_get_time_ms(){return ticks+=10;}void delay(int n){ticks+=n;}
-std::string loaded_rom;
+std::string loaded_rom,selected_game;
+unsigned browser_opens=0;
 int load_rom(const char*path){loaded_rom=path;core_running=rom_result==0;return rom_result;}
 core_info *find_core_by_id(unsigned id){static core_info nes{1,"nestang.bin","nes",load_rom},sms{5,"smstang.bin","sms",load_rom},gb{7,"gbtang.bin","gb",load_rom},snes{2,"snestang.bin","snes",load_rom};return id==1?&nes:id==5?&sms:id==7?&gb:id==2?&snes:nullptr;}
-bool FileChooser::choose_file(std::string &s){assert(rootdir==std::string(drv)+(std::string(drv).back()=='/'?"":"/")+find_core_by_id(reply)->rom_dir && curdir==rootdir&&menu_platform);s=curdir+"/game.sms";return !cancel;}
+bool FileChooser::choose_file(std::string &s){assert(rootdir==std::string(drv)+(std::string(drv).back()=='/'?"":"/")+find_core_by_id(reply)->rom_dir && curdir==rootdir&&menu_platform);++browser_opens;s=curdir+"/"+(selected_game.empty()?(reply==7?"game.gb":reply==1?"game.nes":reply==2?"game.sfc":"game.sms"):selected_game);return !cancel;}
 uint16_t pad_test_value=0;
 void get_joypad_states(uint16_t*a,uint16_t*b,uint16_t*c,uint16_t*d){if(loop_test)throw 1;*a=pad_test_value;*b=*c=*d=0;}
 
+void overlay_game_loading(bool){}
 int main(){
  TextFrames frames;Runtime r(frames);r.remember_core(7);assert(r.detected_core()==7);
  r.debug(true);r.clear();r.status();r.present();assert(std::string(screen[3],32).find("Core: GB")!=std::string::npos);
@@ -119,16 +121,23 @@ int main(){
  }
  r.remember_core(7);
  built_in=true;assert(r.available(7));assert(r.switch_core(7)==nanoblast::SwitchResult::Loaded&&r.detected_core()==7&&asset_activations==1&&staged==0&&asset_saves==0&&reloads==0);
- assert(r.browse_games(7)==nanoblast::BrowseResult::Loaded&&gb_copies==1);assert(r.browse_games(7)==nanoblast::BrowseResult::Loaded&&gb_copies==1);
+ // A failed optional test-ROM copy must never be consulted by Games.
+ gb_copy_ok=false;
+ assert(r.browse_games(7)==nanoblast::BrowseResult::Loaded&&gb_copies==0&&browser_opens==1&&loaded_rom=="usb:/gb/game.gb");
+ assert(r.browse_games(7)==nanoblast::BrowseResult::Loaded&&gb_copies==0&&browser_opens==2);
  assert(r.save_boot_core()&&asset_saves==1&&!last_verify&&r.detected_core()==7);
- TextFrames other;Runtime retry(other);gb_copy_ok=false;assert(retry.browse_games(7)==nanoblast::BrowseResult::Failed);gb_copy_ok=true;assert(retry.browse_games(7)==nanoblast::BrowseResult::Loaded);
+ TextFrames other;Runtime retry(other);assert(retry.browse_games(7)==nanoblast::BrowseResult::Loaded&&gb_copies==0);
+ selected_game="game.zip";assert(retry.browse_games(7)==nanoblast::BrowseResult::Loaded&&loaded_rom=="usb:/gb/game.zip"&&gb_copies==0);
+ rom_result=FR_DISK_ERR;loaded_rom.clear();assert(retry.browse_games(7)==nanoblast::BrowseResult::Failed&&loaded_rom=="usb:/gb/game.zip"&&gb_copies==0);
+ rom_result=0;selected_game.clear();cancel=true;assert(retry.browse_games(7)==nanoblast::BrowseResult::Cancelled&&gb_copies==0);cancel=false;
  // Reopen Games after each core change: never inherit another core's folder.
  for(const char *drive:{"sd:","sd:/"}){
   drv=drive;
   for(unsigned id:{1u,5u,7u,2u,1u}){
    reply=id;assert(r.browse_games(id)==nanoblast::BrowseResult::Loaded);
-   assert(loaded_rom==std::string("sd:/")+find_core_by_id(id)->rom_dir+"/game.sms");
+   assert(loaded_rom==std::string("sd:/")+find_core_by_id(id)->rom_dir+"/"+(id==7?"game.gb":id==1?"game.nes":id==2?"game.sfc":"game.sms"));
   }
  }
+ puts("PASS GB Games: no test-ROM copy required, normal and ZIP loading, cancellation and per-core folders");
  return 0;
 }

@@ -1,0 +1,19 @@
+{
+  "setup_violations": 0,
+  "hold_violations": 0,
+  "fmax": {
+    "main": {
+      "required_MHz": 27,
+      "actual_MHz": 28.576
+    },
+    "hclk": {
+      "required_MHz": 74.25,
+      "actual_MHz": 95.821
+    }
+  },
+  "storage_pin_checks": 61,
+  "external_pin_checks": 33,
+  "raw_bytes": 907418,
+  "raw_sha256": "9b54ff415fc58dfc6ef2d6ab7237cfea553611332070c818cf1d478a9d02d4b0",
+  "board_test": "pending"
+}

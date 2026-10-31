@@ -2,7 +2,7 @@
 from pathlib import Path
 import os,subprocess,tempfile,argparse
 P=Path(__file__).resolve().parent
-A=argparse.ArgumentParser();A.add_argument('--firmware',type=Path,default=P.parents[1]/'firmware');A.add_argument('--tools',type=Path,default=Path('/private/tmp/nanoblast-mister-simtools'));a=A.parse_args()
+A=argparse.ArgumentParser();A.add_argument('--firmware',type=Path,default=P/'firmware');A.add_argument('--tools',type=Path,default=Path('/private/tmp/nanoblast-mister-simtools'));a=A.parse_args()
 F=a.firmware.resolve();T=a.tools.resolve();env={**os.environ,'DYLD_LIBRARY_PATH':str(T/'lib')}
 with tempfile.TemporaryDirectory(prefix='save-clock-checks-') as d:
  B=Path(d)

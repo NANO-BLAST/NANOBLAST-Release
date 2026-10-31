@@ -5,8 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CONFIG_FREERTOS 1)
+set(CONFIG_TLSF 1)
+set(CONFIG_ROMAPI 1)
 set(CONFIG_CHERRYUSB 1)
 set(CONFIG_CHERRYUSB_HOST 1)
+set(CONFIG_CHERRYUSB_DEVICE 1)
+set(CONFIG_CHERRYUSB_DEVICE_CDC 1)
 set(CONFIG_BSP_SDH_SDCARD 0)
 set(CONFIG_FATFS 1)
 set(CONFIG_FATFS_USBH 1)
@@ -45,8 +49,15 @@ file(GLOB_RECURSE MY_SOURCES
 
 target_sources(app PRIVATE ${MY_SOURCES}
     storage/xz/xz_crc32.c storage/xz/xz_dec_lzma2.c storage/xz/xz_dec_stream.c
-    storage/tinf/tinflate.c storage/tinf/tinfzlib.c storage/tinf/adler32.c
+    storage/tinf/tinflate.c storage/tinf/tinfzlib.c storage/tinf/adler32.c storage/tinf/tinf_stream.c
 )
 sdk_set_main_file(main.cpp)
 
 project(tangcore CXX)
+
+# Keep the menu inside its protected BL616 secondary-image slot.
+target_compile_options(app PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++17> -Os)
+
+# The SDK appends -O2/-std=c++11 to target flags. Per-source flags come last,
+# keeping C++17 and size optimization effective for the expanded menu service.
+set_source_files_properties(${MY_SOURCES} PROPERTIES COMPILE_OPTIONS "-std=c++17;-Os")

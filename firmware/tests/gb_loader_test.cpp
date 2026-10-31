@@ -69,8 +69,9 @@ int main(){
  reset();close_error=true;assert(loadgb("game.gb")==FR_DISK_ERR&&!hide);
  reset();answers={2};assert(loadgb("game.gb")==FR_INT_ERR&&!core_running&&!hide);
  reset();answers.clear();assert(loadgb("game.gb")==FR_TIMEOUT&&!core_running&&!hide);
- reset();std::ifstream fixture("outputs/gb-nano-integration/NANOBLAST Test.gb",std::ios::binary);assert(fixture);
- source=std::vector<uint8_t>(std::istreambuf_iterator<char>(fixture),{});assert(source.size()==32768&&loadgb("test.gb")==FR_OK);
+ reset();
+ #include "../ui/gb_test_rom.inc"
+ std::copy(gb_test_prefix,gb_test_prefix+sizeof gb_test_prefix,source.begin());assert(source.size()==32768&&loadgb("test.gb")==FR_OK);
  reset();bad_crc=true;assert(loadgb("game.gb")==FR_INT_ERR&&!core_running&&!hide);bad_crc=false;
  reset();no_debug=true;assert(loadgb("game.gb")==FR_INT_ERR&&!core_running&&!hide);no_debug=false;
  return 0;

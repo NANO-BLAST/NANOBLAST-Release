@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.3.1 — 31 October 2026
+
+- Select + L enters USB ROM transfer from the console menus.
+- Accept the chord on either wired input or USB gamepad, on one controller only; trigger once per press.
+- Preserve the Advanced-menu action, save/clock checks and running-game SD ownership restriction.
+- Display the shortcut beside USB ROM transfer in Advanced.
+- All eight focused runtime test groups and the BL616 build pass. Physical shortcut testing is pending.
+- Four core binaries are unchanged from v0.3.0.
+- Matching firmware and core source snapshots are now in this repository as well as the release source ZIP.
+
+## v0.3.0 — 30 October 2026
+
+- USB SD-card ROM browsing and uploads, including filenames containing parentheses.
+- Single-game ZIPs stream into the selected core without an extracted SD-card copy.
+- Game Boy library fixes and centred solid black loading panels in all four cores.
+- Full 4 MiB board readback passed; menu and loading panel confirmed by the user.
+- SNES remains experimental.
+
 ## v0.2.0 — 26 October 2026
 
 - One contiguous compressed asset per core, using a shared checked XZ loader.

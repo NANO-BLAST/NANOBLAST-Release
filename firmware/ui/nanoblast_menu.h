@@ -21,6 +21,7 @@ struct Platform {
     virtual void region(unsigned, bool) {}
     virtual void verify_core(bool) {}
     virtual bool save_boot_core() {return false;}
+    virtual bool usb_transfer() {return false;}
     virtual void debug(bool) {}
     virtual void oled(bool) {}
     virtual void present() {}
@@ -38,6 +39,7 @@ class Menu {
 public:
     explicit Menu(Platform &platform, unsigned active_core = 1);
     void input(uint16_t buttons);
+    void input(uint16_t joy1, uint16_t joy2, uint16_t hid1, uint16_t hid2);
     void redraw();
     void show();
     Page page() const { return page_; }
@@ -49,6 +51,7 @@ private:
     Page page_ = Page::Home;
     unsigned choice_ = 0, core_;
     uint16_t previous_ = 0;
+    bool usb_shortcut_held_ = false;
     bool running_ = false, visible_ = true, select_start_ = false;
     bool debug_ = false;
     bool pal_[3] = {false,false,false};
@@ -61,5 +64,6 @@ private:
     const char *message_ = "";
     unsigned count() const;
     void select();
+    void request_usb_transfer();
 };
 }

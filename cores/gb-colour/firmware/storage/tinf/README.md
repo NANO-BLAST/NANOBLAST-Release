@@ -1,0 +1,1 @@
+Unmodified tinf 1.2.1 source from https://github.com/jibsen/tinf, commit 57ffa1f1d5e3dde19011b2127bd26d01689b694b. Only raw inflate, zlib wrapper and Adler32 are compiled. Zlib license retained in LICENSE and source headers. Used for independent, bounded 4 KiB GB/CGB core-asset blocks.

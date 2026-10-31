@@ -1,12 +1,17 @@
 #include <string>
+#include <cstddef>
 #include <stdarg.h>
 #include <algorithm>
 
+#ifdef NANOBLAST_OVERLAY_HOST_TEST
+#include "../tests/overlay_platform.h"
+#else
 extern "C" {
 #include <FreeRTOS.h>
 #include <task.h>
 }
 #include "utils.h"
+#endif
 #include "overlay.h"
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -14,6 +19,8 @@ extern "C" {
 
 
 int _overlay_on = 1;
+static bool game_loading = false;
+void overlay_game_loading(bool enabled) { game_loading = enabled; }
 int overlay_on() {
     return _overlay_on;
 }
@@ -76,6 +83,21 @@ void overlay_status(const char *fmt, ...) {
     va_end(args);
     buf[255] = '\0';
 
+    if (game_loading) {
+        // Replace the entire progress row so shorter updates leave no stale text.
+        // The runtime has cleared the browser and placed a solid black box here.
+        char row[33];
+        std::fill(row, row+32, ' ');
+        row[32] = 0;
+        unsigned length=0;
+        while(length<26 && buf[length] && buf[length]!='\n' && buf[length]!='\r') ++length;
+        while(length && buf[length-1]==' ') --length;
+        const unsigned left=3+(26-length)/2;
+        std::copy(buf,buf+length,row+left);
+        overlay_cursor(0, 14);
+        overlay_printf("%s", row);
+        return;
+    }
     overlay_cursor(1, 27);
     taskENTER_CRITICAL();
     int len = strlen(buf);
@@ -98,11 +120,11 @@ void overlay_message(const char *msg, int center) {
     for (int i = 0; i < 10; i++) {
         const char *eol = strchr(sol, '\n');
         if (eol) { // found \n
-            w[i] = std::min(eol - sol, 26);
+            w[i] = std::min(eol - sol, std::ptrdiff_t(26));
             maxw = std::max(w[i], maxw);
             sol = eol+1;
         } else {
-            w[i] = std::min(end - sol, 26);
+            w[i] = std::min(end - sol, std::ptrdiff_t(26));
             maxw = std::max(w[i], maxw);
             lines = i+1;
             break;

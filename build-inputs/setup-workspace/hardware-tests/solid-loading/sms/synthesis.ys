@@ -1,0 +1,7 @@
+read_verilog -lib +/gowin/cells_sim.v +/gowin/cells_xtra_gw2a.v;
+read_verilog /Users/ryan/Documents/Codex/2026-10-14/is-x20/work/sms-vhdl/opll.v /Users/ryan/Documents/Codex/2026-10-14/is-x20/work/smstang/nanoblast/rtl/sms_nano_pll.v /Users/ryan/Documents/Codex/2026-10-14/is-x20/work/nanoblast/src/nano20k/gowin_pll_hdmi.v /Users/ryan/Documents/Codex/2026-10-14/is-x20/work/nanoblast/src/iosys/gowin_dpb_menu.v;
+read_slang --single-unit -U SYNTHESIS --allow-use-before-declare --allow-merging-ansi-ports --blackboxed-module ELVDS_OBUF --blackboxed-module OSER10 --blackboxed-module DPB --blackboxed-module CLKDIV --top sms_nano_top -v /Users/ryan/Documents/Codex/2026-10-14/is-x20/work/gowin-slang-primitives.v -f /Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-setup/hardware-tests/solid-loading/sms/sources.f;
+synth_gowin -family gw2a -top sms_nano_top -run begin:begin; blackbox ELVDS_OBUF;
+synth_gowin -family gw2a -top sms_nano_top -run coarse:map_luts; sort;
+read_verilog -icells -lib -specify +/abc9_model.v; abc9 -maxlut 4 -W 500; clean;
+synth_gowin -family gw2a -top sms_nano_top -run map_cells: -json /Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-setup/hardware-tests/solid-loading/sms/sms.json; check -assert

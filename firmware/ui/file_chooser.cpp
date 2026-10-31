@@ -29,6 +29,7 @@ bool FileChooser::list_files(string dir, vector<FileEntry> &files, int start, in
 
     FILINFO fno;
     while ((last_error=f_readdir(&d, &fno)) == FR_OK && fno.fname[0] != 0) {
+        if(fno.fname[0]=='.')continue; // Hide the private ZIP cache and work files.
         if(known_count<0)(*count)++;
         if (start > 0) {
             start--;

@@ -8,8 +8,13 @@
 #include "overlay.h"
 #endif
 
+#include "../storage/rom_file.h"
+
 int loadsms(const char *fname) {
-    const char *extension=std::strrchr(fname,'.');
+    RomFile file;int opened=file.open(fname,5);
+    if(opened!=FR_OK){if(file.is_zip())overlay_message(file.error(),1);return opened;}
+
+    const char *extension=std::strrchr(file.name(),'.');
     const bool gear=extension&&!strcasecmp(extension,".gg");
     if(!extension||(strcasecmp(extension,".sms")&&!gear)){
         overlay_message("Choose an SMS .sms or Game Gear .gg",1);return FR_INVALID_NAME;
@@ -22,28 +27,27 @@ int loadsms(const char *fname) {
         }
     }
 #endif
-    FRESULT result=f_open(&fcore,fname,FA_READ);
-    if(result!=FR_OK)return result;
-    const unsigned size=f_size(&fcore),header=(size%1024==512)?512:0;
+    int result=FR_OK;
+    const unsigned size=file.size(),header=(size%1024==512)?512:0;
     const unsigned length=size-header;
     // The Nano mapper masks power-of-two cartridge images up to 4MiB.
     if(length<8192||length>4*1024*1024||(length&(length-1))){
-        f_close(&fcore);overlay_message("Unsupported SMS ROM size",1);return FR_INVALID_PARAMETER;
+        file.close();overlay_message("Unsupported SMS ROM size",1);return FR_INVALID_PARAMETER;
     }
     core_running=false;
-    result=f_lseek(&fcore,header);
-    if(result!=FR_OK){f_close(&fcore);return result;}
+    result=file.seek(header);
+    if(result!=FR_OK){file.close();return result;}
     set_core_config((get_core_config()&~8u)|(gear?8u:0u));
     set_loading_state(1);
     unsigned total=0;
     while(total<length){
         UINT got=0;unsigned chunk=length-total>1024?1024:length-total;
-        result=f_read(&fcore,fbuf,chunk,&got);
+        result=file.read(fbuf,chunk,&got);
         if(result!=FR_OK||got!=chunk){if(result==FR_OK)result=FR_DISK_ERR;break;}
         send_fbuf_data(got);total+=got;
         if((total&0x3fff)==0)overlay_status(gear?"Loading GG %u/%uK":"Loading SMS %u/%uK",total>>10,length>>10);
     }
-    const FRESULT closed=f_close(&fcore);
+    const int closed=file.close();
     if(result==FR_OK)result=closed;
     set_loading_state(0);
     if(result!=FR_OK)return result;

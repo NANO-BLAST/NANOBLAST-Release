@@ -23,9 +23,13 @@ Shared menus, artwork, core switching, explicit Core boot flash, manual clock se
 - [`cores/`](cores): NES, SMS/Game Gear, GB/Colour and experimental SNES source.
 - [`tools/`](tools): source utilities and checks.
 - [`licenses/`](licenses): additional third-party notices; upstream notices remain in source files.
-- [`SOURCE_MAP.json`](SOURCE_MAP.json): paths from the original source snapshot.
+- [`SOURCE_MAP.json`](SOURCE_MAP.json): source provenance and snapshot details.
 
-Version v0.2.0 uses one contiguous compressed asset per core and a shared checked loader. Core storage falls from 3,100,672 to 1,462,272 bytes. The firmware was built natively on macOS; the complete board flash readback passed, and the user confirmed core switching, game launching, GB saves and clock resume work. FPGA bitstreams are unchanged. SNES remains experimental with the existing gameplay limitations.
+Version v0.3.1 adds **Select + L** (left shoulder) to enter USB ROM transfer from any console menu page, without navigating Settings. Use both buttons on the same controller. If a game has run, restart first; the existing save/clock checks and SD ownership guard still apply. Power-cycle to leave transfer mode. Settings → Advanced → USB ROM transfer remains available.
+
+This also includes the v0.3.0 USB ROM browsing/uploads, single-game ZIP streaming, Game Boy library fixes, and solid black loading panel in all four cores. The four FPGA images are unchanged from v0.3.0. SNES remains experimental.
+
+The new shortcut passes host tests and the BL616 build, but has not yet been checked on a physical controller. The v0.3.0 firmware/core bundle passed full board readback. See [BUILDING.md](BUILDING.md) for source layout and build requirements.
 
 ## Credits and licence
 

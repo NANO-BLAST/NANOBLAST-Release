@@ -3,7 +3,7 @@ from pathlib import Path
 import os,subprocess,sys,argparse
 P=Path(__file__).resolve().parent;B=P/'build';B.mkdir(exist_ok=True)
 A=argparse.ArgumentParser();A.add_argument('--rom',type=Path);args=A.parse_args()
-T=Path(os.environ['NANOBLAST_CAD_ROOT']).resolve();env={**os.environ,'VERILATOR_ROOT':str(T/'share/verilator'),'GHDL_PREFIX':'work/oss-cad-suite/lib/ghdl','DYLD_LIBRARY_PATH':str(T/'lib')}
+T=Path(os.environ['NANOBLAST_CAD_ROOT']).resolve();env={**os.environ,'VERILATOR_ROOT':str(T/'share/verilator'),'GHDL_PREFIX':'/Users/ryan/Documents/Codex/2026-10-14/is-x20/work/oss-cad-suite/lib/ghdl','DYLD_LIBRARY_PATH':str(T/'lib')}
 def run(cmd,log=None):
  if log:
   with (B/log).open('w') as f:subprocess.run(list(map(str,cmd)),cwd=B,env=env,stdout=f,stderr=subprocess.STDOUT,check=True)

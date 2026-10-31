@@ -48,6 +48,9 @@ struct View:nanoblast::Platform{
  nanoblast::BrowseResult browse_games(unsigned)override{return nanoblast::BrowseResult::Cancelled;}
 };
 int main(){
+ directories["sd:/cache-test"]={{".nbzip",true},{"game.zip",false},{".work",false}};
+ FileChooser cache_browser;vector<FileEntry> cache_rows;int cache_count=0;
+ assert(cache_browser.list_files("sd:/cache-test",cache_rows,0,10,&cache_count)&&cache_count==1&&cache_rows[0].name=="game.zip");
  // A 1,000-file folder is counted once. Page two reads only its first 20 entries.
  directories["sd:/large"]={};for(unsigned i=0;i<1000;i++)directories["sd:/large"].push_back({"game"+std::to_string(i)+".nes",false});
  FileChooser large;vector<FileEntry> rows;int total=0;read_calls=0;

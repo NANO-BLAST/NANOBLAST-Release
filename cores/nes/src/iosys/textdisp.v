@@ -203,7 +203,7 @@ always @(posedge hclk) begin
         // compute output color
         // On transparent pixels bits 0/1 carry panel/selection masks. Opaque glyphs
         // retain the existing BGR5 color contract and always take priority.
-        overlay_color_buf <= debug_hit ? {1'b1,15'd0} : panel_hit && selection_hit ? {1'b1,layout_pixel[22] ? THEME_LIGHT : 15'h7fff}
+        overlay_color_buf <= (debug_hit || (panel_hit && panel_pixel[21])) ? {1'b1,15'd0} : panel_hit && selection_hit ? {1'b1,layout_pixel[22] ? THEME_LIGHT : 15'h7fff}
             : {1'b0,13'd0,selection_hit,panel_hit};
         if (logo_active) begin
             if (mem_do_b[logo_xoff])
@@ -211,7 +211,7 @@ always @(posedge hclk) begin
             else
                 overlay_color_buf <= {1'b0, COLOR_BACK};
         end else if (mem_do_b[xoff]) begin
-            overlay_color_buf <= {1'b1,panel_hit && selection_hit
+            overlay_color_buf <= {1'b1,panel_hit && selection_hit && !panel_pixel[21]
                 ? 15'd0 : panel_hit ? THEME_TEXT : COLOR_TEXT};
         end
     end

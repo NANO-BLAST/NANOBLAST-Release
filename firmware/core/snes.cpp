@@ -10,15 +10,17 @@
 #include "overlay.h"
 #endif
 
+#include "../storage/rom_file.h"
+
 namespace {
 char snes_detail[48]="SNES: no game selected";
 char snes_transfer[48]="ROM: not checked",snes_cpu[48]="CPU: no capture",snes_apu[48]="APU: no capture";
 // Validate before shifting or using cartridge-controlled sizes. The FPGA
 // expects the 64 bytes at the selected internal header before the ROM stream.
-int snes_header(FIL *file,unsigned pos,unsigned length,unsigned kind) {
-    if(pos>f_size(file)||64>f_size(file)-pos||f_lseek(file,pos)!=FR_OK)return -1;
+int snes_header(RomFile *file,unsigned pos,unsigned length,unsigned kind) {
+    if(pos>file->size()||64>file->size()-pos||file->seek(pos)!=FR_OK)return -1;
     UINT got=0;
-    if(f_read(file,fbuf,64,&got)!=FR_OK||got!=64)return -1;
+    if(file->read(fbuf,64,&got)!=FR_OK||got!=64)return -1;
     const unsigned mapper=fbuf[21],rom=fbuf[23],ram=fbuf[24];
     const unsigned reset=unsigned(fbuf[60])|(unsigned(fbuf[61])<<8);
     if(rom<5||rom>13||ram>7||reset<0x8000)return -1;
@@ -71,13 +73,15 @@ const char *snes_apu_diagnostic(){
     return snes_apu;
 }
 int loadsnes(const char *fname) {
-    const char *ext=std::strrchr(fname,'.');
+    RomFile file;int opened=file.open(fname,2);
+    if(opened!=FR_OK){if(file.is_zip())overlay_message(file.error(),1);return opened;}
+
+    const char *ext=std::strrchr(file.name(),'.');
     if(!ext||(strcasecmp(ext,".sfc")&&strcasecmp(ext,".smc"))){
         overlay_message("Choose a SNES .sfc or .smc",1);return FR_INVALID_NAME;
     }
-    FRESULT result=f_open(&fcore,fname,FA_READ);
-    if(result!=FR_OK)return result;
-    const unsigned size=f_size(&fcore),offset=size%1024,length=size-offset;
+    int result=FR_OK;
+    const unsigned size=file.size(),offset=size%1024,length=size-offset;
     // The Nano's upstream memory map reserves the final 256KiB of banks
     // 0/1 for work/save RAM. Do not silently overwrite it or alias 6MiB ROMs.
 #if defined(TANG_NANO20K)
@@ -86,13 +90,13 @@ int loadsnes(const char *fname) {
     const unsigned limit=0x600000;
 #endif
     if((offset!=0&&offset!=512)||length<32768||length>limit){
-        f_close(&fcore);overlay_message("Unsupported SNES ROM size",1);return FR_INVALID_PARAMETER;
+        file.close();overlay_message("Unsupported SNES ROM size",1);return FR_INVALID_PARAMETER;
     }
     std::snprintf(snes_transfer,sizeof snes_transfer,"ROM: not checked");
     uint8_t chosen[64];int best=-1;unsigned selected=0;
     const unsigned positions[]={0x7fc0,0xffc0,0x40ffc0};
     for(unsigned kind=0;kind<3;kind++){
-        const int score=snes_header(&fcore,offset+positions[kind],length,kind);
+        const int score=snes_header(&file,offset+positions[kind],length,kind);
         if(score>best){best=score;selected=positions[kind];std::memcpy(chosen,fbuf,64);}
     }
     const bool found=best>=0;
@@ -104,7 +108,7 @@ int loadsnes(const char *fname) {
     else std::snprintf(snes_detail,sizeof snes_detail,"SNES: invalid header");
     if(!found||!supported_snes_cartridge()){
         char error[40];std::snprintf(error,sizeof error,"Unsupported chip M%02X T%02X",unsigned(fbuf[21]),unsigned(fbuf[22]));
-        f_close(&fcore);overlay_message(found?error:"Invalid SNES ROM header",1);
+        file.close();overlay_message(found?error:"Invalid SNES ROM header",1);
         return FR_INVALID_PARAMETER;
     }
 #if defined(TANG_NANO20K)
@@ -112,26 +116,26 @@ int loadsnes(const char *fname) {
         // New bitstreams advertise their optional cartridge-DSP capability.
         // A standard-cartridge test image must not silently run DSP games.
         const int caps=get_fpga_load_status();
-        if(caps<0){f_close(&fcore);return FR_TIMEOUT;}
+        if(caps<0){file.close();return FR_TIMEOUT;}
         if((caps&0xf0)==0xa0&&!(caps&4)){
-            f_close(&fcore);overlay_message("Core has no cartridge DSP",1);return FR_INVALID_PARAMETER;
+            file.close();overlay_message("Core has no cartridge DSP",1);return FR_INVALID_PARAMETER;
         }
     }
 #endif
     // Seek before resetting the core; fbuf still contains the chosen header.
-    result=f_lseek(&fcore,offset);
-    if(result!=FR_OK){f_close(&fcore);return result;}
+    result=file.seek(offset);
+    if(result!=FR_OK){file.close();return result;}
     core_running=false;set_loading_state(1);send_fbuf_data(64);
     unsigned total=0;uint32_t crc=0xffffffffu;
     while(total<length){
         UINT got=0;const unsigned chunk=length-total>1024?1024:length-total;
-        result=f_read(&fcore,fbuf,chunk,&got);
+        result=file.read(fbuf,chunk,&got);
         if(result!=FR_OK||got!=chunk){if(result==FR_OK)result=FR_DISK_ERR;break;}
         crc=nanoblast::crc32_update(crc,fbuf,got);
         send_fbuf_data(got);total+=got;
         if((total&0xffff)==0)overlay_status("Loading SNES %u/%uK",total>>10,length>>10);
     }
-    const FRESULT closed=f_close(&fcore);if(result==FR_OK)result=closed;
+    const int closed=file.close();if(result==FR_OK)result=closed;
     if(result!=FR_OK){set_loading_state(0);return result;}
 #if defined(TANG_NANO20K)
     // Keep the game in reset until the FPGA's received stream and a complete

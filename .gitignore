@@ -1,0 +1,5 @@
+firmware/build/
+firmware/build_out/
+artifacts/
+__pycache__/
+.DS_Store

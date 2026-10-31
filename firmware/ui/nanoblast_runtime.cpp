@@ -1,5 +1,8 @@
 // NANOBLAST menu runtime. GPL-3.0; see COPYING.NANOBLAST.
 #include "nanoblast_runtime.h"
+#ifndef NANOBLAST_RUNTIME_HOST_TEST
+#include "rom_transfer.h"
+#endif
 #include "nanoblast_menu.h"
 #ifdef NANOBLAST_RUNTIME_HOST_TEST
 #include "../tests/runtime_platform.h"
@@ -41,7 +44,7 @@ struct TextFrames {char shown[28][32],frame[28][32];};
 class Runtime : public nanoblast::Platform {
     int detected_core_=-1;
     bool debug_=false;
-    bool game_imported_=false,gb_test_ready_=false;
+    bool game_imported_=false;
     bool verify_core_=false,oled_=false;
     const char *switch_error_="Core load failed";
     char (&shown_)[28][32],(&frame_)[28][32];
@@ -182,6 +185,15 @@ public:
         if(enabled){gb_save_flush();nanoblast_clock_service(true);}
     }
     nanoblast::ClockDate clock_get() override {return nanoblast_clock_date();}
+    bool usb_transfer() override {
+#ifdef NANOBLAST_RUNTIME_HOST_TEST
+        return false;
+#else
+        if(!gb_save_flush()||!nanoblast_clock_checkpoint())return false;
+        clear();text(2,16,"USB ROM transfer mode");text(2,18,"Connect USB to your computer");text(2,20,"Power-cycle to return");present();
+        nanoblast_usb_rom_transfer();return true;
+#endif
+    }
     bool clock_set(const nanoblast::ClockDate &d) override {
         return gb_save_flush()&&nanoblast_clock_set(d);
     }
@@ -266,10 +278,6 @@ public:
             // rather than reading the entire imported ROM before each launch.
             game_imported_=true;
         }
-        if(id==7&&!gb_test_ready_){
-            if(!nanoblast_prepare_gb_game()){overlay_message("GB test ROM copy failed",1);return nanoblast::BrowseResult::Failed;}
-            gb_test_ready_=true;
-        }
         selection(false,0,0,0,0);
         // Each core owns a games folder; navigation cannot leave that folder.
         chooser.rootdir=drv;
@@ -282,7 +290,15 @@ public:
         shown_valid_=false;
         selection(false,0,0,0,0);
         if(!chosen)return chooser.last_error==FR_OK ? nanoblast::BrowseResult::Cancelled : nanoblast::BrowseResult::Failed;
-        if(c->load_rom(name.c_str())!=FR_OK) {
+        // Replace browser text before loading and reserve a solid box in the centre.
+        clear();large_text(false);half_cell_row(-1);
+        selection(false,0,0,0,0);black_panel(2,12,29,15);
+        text(8,13,"Loading game...");present();
+        overlay_game_loading(true);
+        const int loaded=c->load_rom(name.c_str());
+        overlay_game_loading(false);
+        external_screen_changed();
+        if(loaded!=FR_OK) {
             core_running=false;::overlay(1);
             overlay_message("Game load failed",1);
             return nanoblast::BrowseResult::Failed;
@@ -349,7 +365,7 @@ void nanoblast_menu_loop() {
         }
         gb_save_service();
         nanoblast_clock_service();
-        menu.input(joy1|joy2|hid1|hid2);
+        menu.input(joy1,joy2,hid1,hid2);
         delay(20);
     }
 }

@@ -34,7 +34,7 @@ int main(){
  reset();assert(loadsms("game.gg")==FR_OK&&sent==source&&configuration==12&&core_running);
  reset(32768+512);assert(loadsms("game.GG")==FR_OK&&sent==std::vector<uint8_t>(source.begin()+512,source.end())&&configuration==12);
  answers={1};assert(loadsms("game.sms")==FR_OK&&configuration==4); // Loading SMS clears only the GG flag.
- reset();gear_capable=false;assert(loadsms("game.gg")==FR_INVALID_PARAMETER&&states.empty()&&sent.empty()&&closed==0&&configuration==4);
+ reset();gear_capable=false;assert(loadsms("game.gg")==FR_INVALID_PARAMETER&&states.empty()&&sent.empty()&&closed==1&&configuration==4);
  reset();assert(loadsms("game.zip")==FR_INVALID_NAME&&states.empty()&&sent.empty());
  reset(8193);assert(loadsms("game.sms")==FR_INVALID_PARAMETER&&states.empty()&&sent.empty()&&closed==1);
  reset(0);assert(loadsms("game.sms")==FR_INVALID_PARAMETER&&states.empty());
