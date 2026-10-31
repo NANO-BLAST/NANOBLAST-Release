@@ -7,3 +7,5 @@ const char *nanoblast_background_fallback_sd();
 void nanoblast_background_reply(unsigned status);
 
 void nanoblast_background_oled(bool enabled);
+
+bool nanoblast_background_ready();

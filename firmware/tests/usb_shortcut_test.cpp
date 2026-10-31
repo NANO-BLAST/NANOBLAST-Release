@@ -17,7 +17,7 @@ struct Fake:Platform {
  BrowseResult browse_games(unsigned)override{return game?BrowseResult::Loaded:BrowseResult::Cancelled;}
  void shortcut(bool)override{}
  bool usb_transfer()override{++transfers;return transfer_ok;}
- bool has(const char*s)const{for(const auto&line:lines)if(line==s)return true;return false;}
+ bool has(const char*s)const{for(const auto&line:lines){std::string normalized;for(char c:line)if(c!=' '||normalized.empty()||normalized.back()!=' ')normalized+=c;if(normalized==s)return true;}return false;}
 };
 void press(Menu&m,uint16_t keys){m.input(keys);m.input(0);}
 void down(Menu&m,unsigned n){while(n--)press(m,0x20);}

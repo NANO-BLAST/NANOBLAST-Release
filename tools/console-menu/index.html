@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NanoBlast · Horizon menu preview</title><style>
+*{box-sizing:border-box}body{margin:0;background:#030c1d;min-height:100vh;display:grid;place-items:center}main{width:min(1280px,100%)}canvas{display:block;width:100%;height:auto;image-rendering:pixelated;outline:none}#status{color:#ffb29c;font:13px monospace;padding:10px}
+</style><main><canvas id="screen" width="1280" height="720" tabindex="0" aria-label="NanoBlast console menu"></canvas><p id="status" role="alert" hidden></p></main><script>
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');let sequence=[],frame,busy=false,font,raw;
+function glyph(x,y,text,color='#ffffff'){ctx.fillStyle=color;for(let c=0;c<text.length;c++){let code=text.charCodeAt(c);if(code>127)code=63;for(let row=0;row<8;row++){const bits=font[code*8+row];for(let bit=0;bit<8;bit++)if(bits&(1<<bit))ctx.fillRect(x+c*24+bit*3,y+row*3,3,3)}}}
+function draw(){canvas.setAttribute('aria-label',frame.rows.map(s=>s.trim()).filter(Boolean).join(' · '));const palette=raw.slice(32,800);if(!frame.helpers)for(let i=240;i<247;i++)palette.set([6,21,46],i*3);if(frame.theme&&frame.highlight&&frame.selected>=15&&frame.selected<=26){const at=(224+frame.selected-15)*3;palette.set([235,51,39],at)}const pixels=ctx.createImageData(1280,720),out=pixels.data;for(let i=0;i<921600;i++){let c=raw[800+i]*3;out[4*i]=palette[c];out[4*i+1]=palette[c+1];out[4*i+2]=palette[c+2];out[4*i+3]=255}ctx.putImageData(pixels,0,0);
+ if(!frame.theme){ctx.fillStyle='#000';ctx.fillRect(0,0,1280,720);if(frame.highlight){ctx.fillStyle='#eee';ctx.fillRect(280,24+frame.selected*24,744,24)}}
+ if(!frame.visible){ctx.fillStyle='#06152e';ctx.fillRect(0,0,1280,720);glyph(400,280,'GAME WOULD LAUNCH');glyph(280,352,frame.game.split('/').pop().substring(0,30));return}
+ frame.rows.forEach((s,y)=>glyph(256+(y===frame.half_row?12:0),24+y*24,s,!frame.theme&&frame.highlight&&frame.selected===y?'#000':'#ffffff'));
+}
+async function update(){busy=true;try{const r=await fetch('/frame',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keys:sequence})});if(!r.ok)throw Error(await r.text());frame=await r.json();status.hidden=true;draw()}catch(e){status.hidden=false;status.textContent='Preview error: '+e.message}finally{busy=false}}
+async function press(key){if(busy)return;sequence.push(key,0);await update()}
+window.addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;if(e.key.toLowerCase()==='r'){e.preventDefault();sequence=[];update();return}if(e.key.toLowerCase()==='m'){e.preventDefault();if(!busy){sequence.push(132,0,12,0);update()}return}const code={ArrowUp:16,ArrowDown:32,ArrowLeft:64,ArrowRight:128,Enter:256,Escape:1,t:1028,T:1028}[e.key];if(code!==undefined){e.preventDefault();press(code)}});
+(async()=>{font=await(await fetch('/font.json')).json();raw=new Uint8Array(await(await fetch('/horizon.nbbg')).arrayBuffer());await update()})();
+</script></html>

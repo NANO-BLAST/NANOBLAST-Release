@@ -1,9 +1,11 @@
 {
-  "base": "v0.3.0 corresponding source snapshot",
+  "base": "v0.3.1 corresponding source snapshot",
   "firmware": "firmware/",
   "exact_core_build_inputs": "build-inputs/ (active synthesis inputs, constraints and recipes only)",
   "game_boy": "cores/gb-colour/",
-  "setup_source_commit": "b1e4f18",
-  "release": "v0.3.1",
-  "source_checksums": "SOURCE_SHA256.json"
+  "setup_source_commit": "a10e3e771364e4a7ddddec9603e0b161bbd90192",
+  "release": "v0.4.0-rc.1",
+  "source_checksums": "SOURCE_SHA256.json",
+  "artwork": "src/assets/nanoblast-horizon.png",
+  "preview": "tools/console-menu/"
 }

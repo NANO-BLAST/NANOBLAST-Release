@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.0-rc.1 — Horizon menu candidate
+
+- Blue-sky Horizon theme matching the setup utility, with centred menu choices and one space between words.
+- SNES-style red A Select and yellow B Back helpers, one row above the bottom.
+- Eight-row game browser; page count stays clear of the button helpers.
+- Existing Select + L, USB ROM uploads, ZIP streaming and solid loading panel retained.
+- Four core binaries unchanged from v0.3.1. Ten runtime groups, artwork upload/decompression tests, host navigation and BL616 build pass.
+- Physical console review is pending; this is a prerelease.
+
+
 ## v0.3.1 — 31 October 2026
 
 - Select + L enters USB ROM transfer from the console menus.

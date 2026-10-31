@@ -1,16 +1,24 @@
 // NANOBLAST BL616 menu controller. GPL-3.0; see COPYING.NANOBLAST.
 #include "nanoblast_menu.h"
+#include "menu_theme.h"
 #include <cstring>
 #include <cstdio>
 namespace nanoblast {
 namespace {
 constexpr unsigned cores[]={1,5,7,2};
-const char *running_labels[]={"NES core running","SMS/GG core running","GB core running","SNES core running"};
-const char *unavailable_labels[]={"NES core unavailable","SMS/GG core unavailable","GB core unavailable","SNES core unavailable"};
 unsigned region_index(unsigned core){return core==2?2:core==5?1:0;}
 void centered(Platform&p,unsigned row,const char*s){
- unsigned n=static_cast<unsigned>(std::strlen(s));p.text(n<31?1+(31-n)/2:1,row,s);
+ unsigned n=static_cast<unsigned>(std::strlen(s));
+ // Keep the label's word spacing intact; centre on the character grid.
+ // Single odd-width words can use the existing half-cell renderer shift.
+ if((n&1)&&n<32&&!std::strchr(s,' '))p.half_cell_row(static_cast<int>(row));
+ p.text(n<32?(32-n)/2:0,row,s);
 }
+}
+void draw_usb_transfer_screen(Platform &p){
+ p.menu_theme(true);p.clear();p.large_text(false);p.half_cell_row(-1);
+ fixed_menu_panel(p);p.selection(false,0,0,0,0);
+ centered(p,15,"USB ROM TRANSFER");centered(p,20,"READY TO CONNECT");p.present();
 }
 Menu::Menu(Platform&p,unsigned core):p_(p),core_(core){p_.verify_core(false);}
 unsigned Menu::count()const{
@@ -22,17 +30,18 @@ unsigned Menu::count()const{
 }
 void Menu::show(){visible_=true;page_=Page::Home;choice_=0;message_="";p_.overlay(true);redraw();}
 void Menu::redraw(){
- p_.debug(debug_);p_.clear();p_.large_text(false);if(debug_)p_.status();
+ p_.menu_theme(true);p_.debug(debug_);p_.clear();p_.large_text(false);if(debug_)p_.status();
  fixed_menu_panel(p_);
- const unsigned first=page_==Page::Home?14+(10-count())/2:15;
- p_.half_cell_row(page_==Page::Home?static_cast<int>(first+2):-1);
+ const bool spaced=page_==Page::Home||page_==Page::Cores;
+ const unsigned first=page_==Page::Home?(count()==3?19:18):spaced&&count()==3?18:horizon::FirstChoice;
+ p_.half_cell_row(-1);
+ centered(p_,15,page_==Page::Home?"MAIN MENU":page_==Page::Cores?"CHOOSE CORE":page_==Page::Settings?"SETTINGS":page_==Page::Clock?"SET CLOCK":"ADVANCED");
  if(page_==Page::Home){
-  centered(p_,first,"Games");centered(p_,first+1,"Cores");centered(p_,first+2,"Settings");
-  if(running_)centered(p_,first+3,"Resume game");
+  centered(p_,first,"PLAY GAMES");centered(p_,first+2,"CHOOSE CORE");centered(p_,first+4,"SETTINGS");
+  if(running_)centered(p_,first+6,"RESUME GAME");
  }else if(page_==Page::Cores){
-  const char *names[]={"Nintendo NES / Famicom","Sega Master System / Game Gear","Game Boy / Game Boy Colour","SNES (experimental)"};
-  for(unsigned i=0;i<count();i++)centered(p_,first+i,names[i]);
-  if(!*message_){unsigned id=cores[choice_];centered(p_,23,id==core_?running_labels[choice_]:p_.available(id)?"Core ready to load":unavailable_labels[choice_]);}
+  const char *names[]={"NES / FAMICOM","MASTER SYSTEM / GAME GEAR","GAME BOY / COLOUR","SNES (EXPERIMENTAL)"};
+  for(unsigned i=0;i<count();i++)centered(p_,first+2*i,names[i]);
  }else if(page_==Page::Settings){
   centered(p_,first,select_start_?"Menu: SELECT + START":"Menu: SELECT + RIGHT");
   centered(p_,first+1,core_==0?"Region: choose a core":core_==7?"Region: fixed (Game Boy)":pal_[region_index(core_)]?"Region: PAL":"Region: NTSC");
@@ -46,12 +55,12 @@ void Menu::redraw(){
   centered(p_,first,debug_?"[x] Debug mode":"[ ] Debug mode");
   centered(p_,first+1,verify_core_?"[x] Verify core":"[ ] Verify core");
   centered(p_,first+3,oled_?"[x] OLED Mode (Beta)":"[ ] OLED Mode (Beta)");
-  centered(p_,first+4,"USB ROM transfer: SELECT+L");
+  centered(p_,first+4,"USB ROM transfer");
   centered(p_,first+2,experimental_?"[x] Experimental cores":"[ ] Experimental cores");
  }
- p_.selection(true,1,first+choice_,31,first+choice_);
- p_.text(1,27,clock_editing_?"Up/Down Adjust A/B Done":"Up/Down Move  A Select  B Back");
- if(*message_)centered(p_,23,message_);p_.present();
+ p_.selection(true,1,first+choice_*(spaced?2:1),31,first+choice_*(spaced?2:1));
+ p_.button_helpers();
+ if(*message_)centered(p_,25,message_);p_.present();
 }
 void Menu::select(){
  message_="";
@@ -77,7 +86,7 @@ void Menu::select(){
   }else if(choice_==2){
    if(!core_)message_="Choose a core first";
    else{
-    centered(p_,23,"Saving core...");p_.present();const bool saved=p_.save_boot_core();
+    centered(p_,25,"Saving core...");p_.present();const bool saved=p_.save_boot_core();
     core_=p_.detected_core();running_=false;message_=saved?"Core saved to boot flash":p_.switch_error();
    }
   }else if(choice_==3){page_=Page::Clock;choice_=0;clock_draft_=p_.clock_get();clock_draft_.second=0;}
@@ -96,7 +105,7 @@ void Menu::select(){
   if(selected==core_){page_=Page::Home;choice_=0;}
   else if(!p_.available(selected))message_="Core image not installed";
   else{
-   p_.text(1,23,"                               ");centered(p_,25,"Loading core...");p_.present();
+   p_.text(1,25,"                               ");centered(p_,25,"Loading core...");p_.present();
    switch(p_.switch_core(selected)){
    case SwitchResult::Loaded:p_.region(selected,pal_[region_index(selected)]);core_=selected;running_=false;page_=Page::Home;choice_=0;break;
    case SwitchResult::Unavailable:message_="Core image not installed";break;

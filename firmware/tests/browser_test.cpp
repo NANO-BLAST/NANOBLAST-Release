@@ -27,21 +27,21 @@ void get_joypad_states(uint16_t*a,uint16_t*b,uint16_t*c,uint16_t*d){
  release_due=true;
 }
 bool choose(FileChooser&c,string&result){seed_poll=true;return c.choose_file(result);}
-int joy_choice(int top,int len,int*active,int,bool arrow){assert(top==15&&!arrow&&!held&&!actions.empty());auto a=actions.front();actions.pop_front();assert(len?a.first<len:a.first==0);*active=a.first;return a.second;}
+int joy_choice(int top,int len,int*active,int,bool arrow){assert(top==17&&!arrow&&!held&&!actions.empty());auto a=actions.front();actions.pop_front();assert(len?a.first<len:a.first==0);*active=a.first;return a.second;}
 struct View:nanoblast::Platform{
  unsigned frames=0,disabled=0;vector<string> labels;vector<unsigned> selected;char grid[28][32];
  void clear()override{std::memset(grid,' ',sizeof grid);}
  void text(unsigned x,unsigned y,const char*s)override{
   const unsigned n=std::strlen(s);
-  if(y>=15&&y<=24)assert(x==2);
+  if(y>=16&&y<=24)assert(x==2);
   if(y==25)assert(x==(n<31?1+(31-n)/2:1));
   assert(std::string(s)!=".."&&std::string(s)!="Back"&&std::string(s).find("Return")==string::npos);
   labels.emplace_back(s);if(x<32&&y<28)std::memcpy(grid[y]+x,s,std::min<unsigned>(n,32-x));
  }
- void panel(bool on,unsigned l,unsigned t,unsigned r,unsigned b)override{assert(on&&l==1&&t==14&&r==31&&b==25);}
- void selection(bool on,unsigned l,unsigned t,unsigned r,unsigned b)override{if(!on){assert(l==0&&t==0&&r==0&&b==0);disabled++;visible_active=0;return;}assert(l==1&&r==31&&t==b&&t>=15&&t<=24);selected.push_back(t);visible_active=t-15;}
+ void panel(bool on,unsigned l,unsigned t,unsigned r,unsigned b)override{assert(on&&l==1&&t==15&&r==31&&b==26);}
+ void selection(bool on,unsigned l,unsigned t,unsigned r,unsigned b)override{if(!on){assert(l==0&&t==0&&r==0&&b==0);disabled++;visible_active=0;return;}assert(l==1&&r==31&&t==b&&t>=17&&t<=24);selected.push_back(t);visible_active=t-17;}
  void half_cell_row(int row)override{assert(row==-1);}
- void present()override{for(unsigned y=26;y<27;y++)assert(std::string(grid[y],32)==std::string(32,' '));assert(std::string(grid[27]+1,30)=="U/D Move L/R Page A:Sel B:Back");assert(std::string(grid[14],32)==std::string(32,' '));frames++;}
+ void present()override{assert(std::string(grid[26],32).find("A Select")!=std::string::npos&&std::string(grid[26],32).find("B Back")!=std::string::npos);assert(std::string(grid[15]+10,12)=="GAME LIBRARY");frames++;}
  void overlay(bool)override{}void shortcut(bool)override{}
  bool available(unsigned)override{return false;}
  nanoblast::SwitchResult switch_core(unsigned)override{return nanoblast::SwitchResult::Unavailable;}
@@ -67,9 +67,9 @@ int main(){
  directories["sd:/Empty"]={};c.curdir="sd:/Empty";actions={{0,4},{0,1},{0,1}};
  assert(!choose(c,result)&&v.disabled>0&&c.curdir==c.rootdir); // A on empty folder does nothing.
  directories["sd:/"].clear();for(unsigned i=0;i<25;i++)directories["sd:/"].push_back({"game"+std::to_string(i)+".nes",false});
- c.curdir=c.rootdir;actions={{0,2},{0,2},{0,4}};assert(choose(c,result)&&result=="sd:/game20.nes");
- c.curdir=c.rootdir;actions={{9,4}};assert(choose(c,result)&&result=="sd:/game9.nes"&&v.selected.back()==24);
- c.curdir=c.rootdir;actions={{0,2},{9,4}};assert(choose(c,result)&&result=="sd:/game19.nes"&&v.selected.back()==24);
+ c.curdir=c.rootdir;actions={{0,2},{0,2},{0,4}};assert(choose(c,result)&&result=="sd:/game16.nes");
+ c.curdir=c.rootdir;actions={{7,4}};assert(choose(c,result)&&result=="sd:/game7.nes"&&v.selected.back()==24);
+ c.curdir=c.rootdir;actions={{0,2},{7,4}};assert(choose(c,result)&&result=="sd:/game15.nes"&&v.selected.back()==24);
  // Core folder is the boundary, including nested directories and missing roots.
  directories["sd:/nes"]={{"Series",true}};
  directories["sd:/nes/Series"]={{"Part2",true}};
@@ -81,7 +81,7 @@ int main(){
  assert(!choose(c,result)&&c.last_error==FR_OK&&actions.empty());
  assert(v.labels.back()=="Missing /sms folder");
  c.curdir=c.rootdir="sd:/";
- bool page=false;for(auto&s:v.labels)if(s=="Page 3/3")page=true;assert(page);
+ bool page=false;for(auto&s:v.labels)if(s=="Page 3/4")page=true;assert(page);
  c.curdir=c.rootdir;actions={{0,2},{0,3},{0,4}};assert(choose(c,result)&&result=="sd:/game0.nes");
  c.curdir="sd:/missing";assert(!choose(c,result)&&c.last_error==FR_NO_PATH);
  // A held across entry must not block a new B press, even without a release.

@@ -1,6 +1,6 @@
 # Source and build notes
 
-`firmware/` is the current BL616 menu, including Select + L. The FPGA cores are the v0.3.0 opaque-panel images. `build-inputs/` preserves their exact NES/SMS/SNES synthesis inputs; `cores/gb-colour/` contains the self-contained GB/Colour build. Upstream and per-file notices are retained.
+`firmware/` is the current BL616 menu, including the Horizon menu and Select + L. The FPGA cores are the v0.3.0 opaque-panel images. `build-inputs/` preserves their exact NES/SMS/SNES synthesis inputs; `cores/gb-colour/` contains the self-contained GB/Colour build. Upstream and per-file notices are retained.
 
 ## Host tests
 
@@ -28,3 +28,7 @@ This verifies the menu/core table binding, the four core hashes and the protecte
 Run `python3 relocate_build_inputs.py` to rebase the archived `.ys`, `.f` and `.tcl` recipes. NES/SMS use Yosys with slang, nextpnr-himbaechel and apycula for the GW2A-18C / GW2AR-LV18QN88C8/I7. The custom packer is preserved under `build-inputs/original-workspace/work/pack-nanoblast.py`. GB uses `cores/gb-colour/build_native.py --all` with native Gowin. SNES uses the archived `snes-pixel-pipeline2/build.tcl` and its selected pipelined renderer. SDK/toolchain binaries are not shipped. Tool versions and routing seeds can change rebuilt image hashes.
 
 `SOURCE_SHA256.json` covers the release source snapshot (before build outputs or recipe relocation). No device captures, saves or commercial ROMs are included. The setup app is distributed separately.
+
+## Horizon artwork and desktop preview
+
+Install Pillow, then run `python3 tools/console-menu/build_artwork.py` to regenerate the embedded artwork. It uses the supplied `src/assets/nanoblast-horizon.png`, the preserved FPGA font and the existing palette/decompression protocol. Run `python3 tools/console-menu/serve.py` and open http://127.0.0.1:1421/ for the actual C++ menu/browser against simulated files. See `docs/horizon-console-menu.md`. The preview does not access hardware.

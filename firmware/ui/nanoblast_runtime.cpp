@@ -4,8 +4,11 @@
 #include "rom_transfer.h"
 #endif
 #include "nanoblast_menu.h"
+#include "menu_theme.h"
 #ifdef NANOBLAST_RUNTIME_HOST_TEST
 #include "../tests/runtime_platform.h"
+static bool host_background_ready=true;
+static bool nanoblast_background_ready(){return host_background_ready;}
 static bool gb_save_flush(){return true;}
 static void gb_save_forget(){}
 static void gb_save_service(){}
@@ -45,7 +48,9 @@ class Runtime : public nanoblast::Platform {
     int detected_core_=-1;
     bool debug_=false;
     bool game_imported_=false;
-    bool verify_core_=false,oled_=false;
+    bool verify_core_=false,oled_=false,themed_menu_=false;
+    uint16_t themed_rows_=0xffff;
+    bool helpers_=false,shown_helpers_=false,helpers_known_=false;
     const char *switch_error_="Core load failed";
     char (&shown_)[28][32],(&frame_)[28][32];
     bool composing_=false,shown_valid_=false,logo_cleared_=false,panel_known_=false;
@@ -90,7 +95,7 @@ public:
     }
     void remember_core(int id){detected_core_=id==1||id==5||id==2||id==7?id:-1;}
     unsigned detected_core() const override {return detected_core_==1||detected_core_==5||detected_core_==2||detected_core_==7?unsigned(detected_core_):0;}
-    void external_screen_changed() {shown_valid_=false;}
+    void external_screen_changed() {shown_valid_=false;themed_rows_=0xffff;helpers_known_=false;}
     void load_artwork() {
         if(!oled_)nanoblast_loading_screen();
         // A JTAG reload restores the FPGA bitmap even if normal text is blank.
@@ -106,6 +111,10 @@ public:
     void oled(bool enabled) override {
         if(oled_==enabled)return;
         oled_=enabled;nanoblast_background_oled(enabled);external_screen_changed();
+    }
+    void menu_theme(bool enabled) override {
+        const bool active=enabled&&!oled_&&nanoblast_background_ready();
+        if(active!=themed_menu_){themed_menu_=active;themed_rows_=0xffff;helpers_known_=false;panel_known_=false;selection_known_=false;}
     }
     void debug(bool enabled) override {debug_=enabled;}
     void status() override {
@@ -131,7 +140,7 @@ public:
     void clear() override {
         // Compose the complete screen in RAM without blanking the live display.
         std::memset(frame_,' ',sizeof frame_);
-        composing_=true;status_panel_=false;
+        composing_=true;status_panel_=false;helpers_=false;
     }
     void text(unsigned x,unsigned y,const char *s) override {
         if(composing_) {
@@ -141,11 +150,25 @@ public:
             shown_valid_=false;
         }
     }
+    void button_helpers() override {
+        helpers_=true;
+        if(themed_menu_){text(10,26,"Select");text(20,26,"Back");}
+        else nanoblast::Platform::button_helpers();
+    }
     void large_text(bool enabled) override {large_text_=enabled;}
     void half_cell_row(int row) override {half_cell_row_=row>=0&&row<28?row:-1;}
     void present() override {
         if(!composing_)return;
         clear_legacy_logo();
+        if(themed_menu_&&(!helpers_known_||helpers_!=shown_helpers_)){
+            using namespace nanoblast::horizon;
+            for(unsigned i=0;i<HelperColorCount;i++){
+                const uint32_t color=helpers_?HelperColors[i]:FooterBackground;
+                taskENTER_CRITICAL();fpga_tx_header(18,5);fpga_tx_byte(HelperPalette+i);
+                fpga_tx_byte(color>>16);fpga_tx_byte(color>>8);fpga_tx_byte(color);taskEXIT_CRITICAL();
+            }
+            shown_helpers_=helpers_;helpers_known_=true;
+        }
         for(unsigned y=0;y<28;y++)for(unsigned x=0;x<32;) {
             if(shown_valid_&&shown_[y][x]==frame_[y][x]){++x;continue;}
             unsigned start=x++;
@@ -165,7 +188,7 @@ public:
         shown_valid_=true;composing_=false;
     }
     void panel(bool enabled,unsigned left,unsigned top,unsigned right,unsigned bottom) override {
-        set_panel(enabled,left,top,right,bottom,false);
+        set_panel(enabled&&!themed_menu_,left,top,right,bottom,false);
     }
     void black_panel(unsigned left,unsigned top,unsigned right,unsigned bottom) override {
         set_panel(true,left,top,right,bottom,true);
@@ -190,7 +213,7 @@ public:
         return false;
 #else
         if(!gb_save_flush()||!nanoblast_clock_checkpoint())return false;
-        clear();text(2,16,"USB ROM transfer mode");text(2,18,"Connect USB to your computer");text(2,20,"Power-cycle to return");present();
+        nanoblast::draw_usb_transfer_screen(*this);
         nanoblast_usb_rom_transfer();return true;
 #endif
     }
@@ -198,6 +221,22 @@ public:
         return gb_save_flush()&&nanoblast_clock_set(d);
     }
     void selection(bool enabled,unsigned left,unsigned top,unsigned right,unsigned bottom) override {
+        if(themed_menu_){
+            using namespace nanoblast::horizon;
+            uint16_t rows=0;
+            for(unsigned row=FirstRow;row<=LastRow;row++){
+                const unsigned bit=1u<<(row-FirstRow);
+                if(enabled&&row>=top&&row<=bottom)rows|=bit;
+                if(themed_rows_==0xffff||((rows^themed_rows_)&bit)){
+                    const uint32_t color=row_color(row,rows&bit);
+                    taskENTER_CRITICAL();fpga_tx_header(18,5);
+                    fpga_tx_byte(FirstPalette+row-FirstRow);
+                    fpga_tx_byte(color>>16);fpga_tx_byte(color>>8);fpga_tx_byte(color);
+                    taskEXIT_CRITICAL();
+                }
+            }
+            themed_rows_=rows;enabled=false;
+        }
         uint32_t word=0x02000000u|(enabled?1u<<20:0)|(bottom<<15)|(top<<10)|(right<<5)|left;
         if(composing_)selection_word_=word;
         else {register_word(word);shown_selection_=word;selection_known_=true;}

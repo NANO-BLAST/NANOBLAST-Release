@@ -17,7 +17,7 @@
 namespace {
 const char *background_status="not loaded";
 char loaded_status[32];
-bool oled_mode=false;
+bool oled_mode=false,background_ready=false;
 SemaphoreHandle_t ack;
 volatile unsigned ack_status;
 struct Memory: nanoblast::AssetSource {
@@ -64,6 +64,7 @@ void nanoblast_loading_screen(){
 }
 void nanoblast_background_reply(unsigned status){ack_status=status;if(ack)xSemaphoreGive(ack);}
 const char *nanoblast_background_status(){return background_status;}
+bool nanoblast_background_ready(){return background_ready&&!oled_mode;}
 // Kept for the existing Debug layout; embedded artwork has no fallback path.
 const char *nanoblast_background_fallback_status(){return "";}
 const char *nanoblast_background_fallback_sd(){return "";}
@@ -76,6 +77,7 @@ void nanoblast_background_oled(bool enabled){
  }else nanoblast_load_background();
 }
 void nanoblast_load_background(){
+ background_ready=false;
  if(oled_mode){
   taskENTER_CRITICAL();fpga_tx_header(17,2);fpga_tx_byte(2);taskEXIT_CRITICAL();
   background_status="off (OLED Mode)";return;
@@ -90,6 +92,7 @@ void nanoblast_load_background(){
  const auto result=nanoblast::upload_background(*decoded,transport);
  switch(result){
   case nanoblast::BackgroundResult::Ready:
+   background_ready=true;
    std::snprintf(loaded_status,sizeof loaded_status,"loaded flash, %lu ms",static_cast<unsigned long>(bflb_mtimer_get_time_ms()-start));
    background_status=loaded_status;break;
   case nanoblast::BackgroundResult::Invalid:background_status="invalid flash artwork";break;

@@ -9,8 +9,8 @@
 #include "utils.h"
 #endif
 
-#define PAGESIZE 10
-#define TOPLINE 15
+#define PAGESIZE 8
+#define TOPLINE 17
 
 // void FileChooser::set_fs(FATFS *fs) {
 //     this->fs = fs;
@@ -102,11 +102,16 @@ bool FileChooser::choose_file(string &res) {
             pages = std::max(1,(total+PAGESIZE-1) / PAGESIZE);
             if(page>=pages){page=pages-1;active=0;continue;}
             if(menu_platform){
+                menu_platform->menu_theme(true);
                 menu_platform->clear();
+                menu_platform->button_helpers();
                 menu_platform->large_text(false);
                 menu_platform->half_cell_row(-1);
-                menu_platform->panel(true,1,14,31,25);
-                menu_platform->text(1,27,"U/D Move L/R Page A:Sel B:Back");
+                menu_platform->panel(true,1,15,31,26);
+                menu_platform->text(10,15,"GAME LIBRARY");
+                std::string path=curdir.substr(curdir.find(':')+1);
+                if(path.size()>28)path="..."+path.substr(path.size()-25);
+                menu_platform->text(2,16,path.c_str());
                 std::string status="Page "+std::to_string(page+1)+"/"+std::to_string(pages);
                 menu_platform->text(1+(31-static_cast<unsigned>(status.size()))/2,25,status.c_str());
                 if(files.empty()){
@@ -123,8 +128,8 @@ bool FileChooser::choose_file(string &res) {
                 if(!menu_platform)overlay_cursor(2, i+TOPLINE);
                 if (i < static_cast<int>(files.size())) {
                     std::string label=files[i].name;
-                    if(files[i].is_dir)label+="/";
-                    if(menu_platform)menu_platform->text(2,i+TOPLINE,label.c_str());
+                    if(files[i].is_dir)label="> "+label;
+                    if(menu_platform){if(label.size()>28)label=label.substr(0,25)+"...";menu_platform->text(2,i+TOPLINE,label.c_str());}
                     else overlay_printf("%s",label.c_str());
                 }
             }
