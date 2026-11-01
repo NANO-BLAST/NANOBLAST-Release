@@ -6,9 +6,9 @@
     "ppu_sha256": "ba8c3119e6756b80a7821a9dfa25f068f11b20280c1f6eb81cd46d75a7a90e99"
   },
   "source_sha256": {
-    "cores/nes/src/nes.v": "89051c1ebcf3c0808d2c81aefe4ecb7487b17649d77c7018296c4e8e72d635d8",
+    "cores/nes/src/nes.v": "55ac6b2cd1ea3510f01c62a85cc1d060058adafe6bbb7e60373f9a00c99d8c9f",
     "cores/nes/src/apu.v": "d6d40b55548c54d2df7ea468ae7787b48667fec743e3ea704b6b0a2516940c03",
-    "cores/nes/src/ppu.v": "e1ad8c65d995c773d40692fd74709cafc9db98008922f26ef0549cff759a3d76",
+    "cores/nes/src/ppu.v": "26a4040b74b0d6e7a89b2506e754277061c1b667fee9e9641b6e2fa8a698e9fb",
     "cores/nes/src/dpram.v": "72aa215d806da15d72dd5cab89d9fd2b16369f0a205423307a1d8e4ccd93fd53",
     "cores/nes/src/t65/T65_Pack.v": "59bc04a9e1e2bb7dddf0d493f43a2ed2e823e99664b48795556d316bbd8dfc75",
     "cores/nes/src/t65/T65_ALU.v": "3f0fbf0c7e6afe64b49bc6deeba62d519841ce709cd1770d241f01dafaa9e3af",
@@ -25,34 +25,44 @@
       "rom_tally": 147,
       "rom_pass_tally": 147,
       "verilator": "Verilator 5.053 devel rev v5.052-404-g555f59e8f (mod)"
-    },
-    {
-      "memory_latency_master_clocks": 3,
-      "passed": 147,
-      "total": 147,
-      "rom_tally": 147,
-      "rom_pass_tally": 147,
-      "verilator": "Verilator 5.053 devel rev v5.052-404-g555f59e8f (mod)"
     }
   ],
   "focused_rtl_passes": 20,
+  "focused_oam_uses_vendor_dpb_model": true,
   "region_check": "pass",
   "memory_phase_check_with_background": "pass",
-  "legacy_hdmi_reset_trial": "Skipped: module is not in this release; actual TMDS and video tests pass",
-  "synthesis": {
-    "baseline": {
-      "lut1_through_lut4": 12576,
-      "flip_flops": 6701,
-      "dpb": 33
-    },
-    "candidate": {
-      "lut1_through_lut4": 12774,
-      "flip_flops": 6754,
-      "dpb": 33
-    }
+  "shared_sdram_initial_rendering": {
+    "prior_candidate_stale_bytes": 65580,
+    "samples": 364392,
+    "stale_bytes": 0,
+    "scope": "Initial AccuracyCoin menu, ideal CL2/BL1 SDRAM pins, production shared controller; behavioral OAM; does not establish a full ROM pass through the shared controller"
   },
   "physical_board_result": null,
+  "prior_candidate": {
+    "candidate_sha256": "3fe47a8668655d21ed162c837659223d033aa937a65656f9342044275798640d",
+    "status": "failed",
+    "symptom": "NES game display corrupted after explicitly reloading the candidate; the old power-on core still passed 137/147",
+    "root_cause": "Rendering SDRAM requests moved to the late mapper /RD phase. The standalone fixture did not model contention with CPU accesses."
+  },
   "route_status": "passed",
+  "fmax": {
+    "af_a.clk": {
+      "achieved": 61.04633331298828,
+      "constraint": 21.60013771057129
+    },
+    "fclk": {
+      "achieved": 204.79214477539062,
+      "constraint": 64.8004150390625
+    },
+    "hclk": {
+      "achieved": 122.60912322998047,
+      "constraint": 74.25006866455078
+    }
+  },
+  "raw_sha256": "5e2bcdcebacf4e6ea328bf6eb3a25dc6e44af3bc72ceb617a9599b8a7a6d0612",
+  "checked_storage_pins": 61,
+  "checked_hdmi_pads": 8,
+  "reused_storage_locations": 5847,
   "packed_resources": {
     "baseline": {
       "LUT4": {
@@ -70,11 +80,11 @@
     },
     "candidate": {
       "LUT4": {
-        "used": 16284,
+        "used": 16223,
         "available": 20736
       },
       "DFF": {
-        "used": 7090,
+        "used": 7091,
         "available": 15552
       },
       "BSRAM": {
@@ -84,634 +94,152 @@
     }
   },
   "raw_result_slots": {
-    "$0403": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0404": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0405": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0406": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0407": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0408": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0409": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$040A": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$040B": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$040C": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$040D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$040E": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$040F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0410": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0411": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0412": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0413": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0414": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0415": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0416": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0417": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0419": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$041A": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$041B": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$041C": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$041D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$041E": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$041F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0420": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0422": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0423": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0424": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0425": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0426": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0427": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0428": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0429": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$042A": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$042B": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$042C": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$042D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$042E": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$042F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0430": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0431": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0432": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0433": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0434": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0435": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0436": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0437": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0438": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0439": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$043A": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$043B": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$043C": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$043D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$043E": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$043F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0440": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0441": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0442": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0443": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0444": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0445": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0446": {
-      "latency_1": 5,
-      "latency_3": 5
-    },
-    "$0447": {
-      "latency_1": 5,
-      "latency_3": 5
-    },
-    "$0448": {
-      "latency_1": 5,
-      "latency_3": 5
-    },
-    "$0449": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$044A": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$044B": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$044C": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$044D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$044E": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$044F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0450": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0451": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0452": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0453": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0454": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0455": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0456": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0457": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0458": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0459": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$045A": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$045B": {
-      "latency_1": 65,
-      "latency_3": 65
-    },
-    "$045C": {
-      "latency_1": 9,
-      "latency_3": 9
-    },
-    "$045D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$045E": {
-      "latency_1": 5,
-      "latency_3": 5
-    },
-    "$045F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0460": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0461": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0462": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0463": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0465": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0466": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0467": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0468": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0469": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$046A": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$046B": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$046C": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$046D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$046E": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$046F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0470": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0471": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0472": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0473": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0474": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0475": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0476": {
-      "latency_1": 65,
-      "latency_3": 65
-    },
-    "$0477": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0478": {
-      "latency_1": 9,
-      "latency_3": 9
-    },
-    "$0479": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$047A": {
-      "latency_1": 5,
-      "latency_3": 5
-    },
-    "$047B": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$047C": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$047D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$047E": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$047F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0480": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0481": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0482": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0483": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0484": {
-      "latency_1": 9,
-      "latency_3": 9
-    },
-    "$0485": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0486": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0487": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0488": {
-      "latency_1": 5,
-      "latency_3": 5
-    },
-    "$0489": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$048A": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$048B": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$048C": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$048D": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$048E": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$048F": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0490": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0491": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0492": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0493": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0494": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0495": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0496": {
-      "latency_1": 5,
-      "latency_3": 5
-    },
-    "$0497": {
-      "latency_1": 1,
-      "latency_3": 1
-    },
-    "$0498": {
-      "latency_1": 1,
-      "latency_3": 1
-    }
-  },
-  "route_seed": 2,
-  "placement_timeout": 1000,
-  "reused_non_ppu_storage_locations": 5881,
-  "clock_targets_and_fmax": {
-    "af_a.clk": {
-      "achieved": 65.32958984375,
-      "constraint": 21.60013771057129
-    },
-    "fclk": {
-      "achieved": 136.2954864501953,
-      "constraint": 64.8004150390625
-    },
-    "hclk": {
-      "achieved": 122.35408782958984,
-      "constraint": 74.25006866455078
-    }
-  },
-  "placement_reference": "cores/nes/constraints/release-storage-placement.json",
-  "image_checks": {
-    "timing_pass": true,
-    "checked_storage_pin_count": 61,
-    "fmax": {
-      "af_a.clk": {
-        "achieved": 65.32958984375,
-        "constraint": 21.60013771057129
-      },
-      "fclk": {
-        "achieved": 136.2954864501953,
-        "constraint": 64.8004150390625
-      },
-      "hclk": {
-        "achieved": 122.35408782958984,
-        "constraint": 74.25006866455078
-      }
-    },
-    "raw_sha256": "3fe47a8668655d21ed162c837659223d033aa937a65656f9342044275798640d",
-    "raw_bytes": 907418,
-    "board_test": "pending"
-  },
-  "hdmi_pad_verification": "all eight PPLVDS pads matched vendor reference",
-  "implementation_commit": "41ae2f0"
+    "$0403": 1,
+    "$0404": 1,
+    "$0405": 1,
+    "$0406": 1,
+    "$0407": 1,
+    "$0408": 1,
+    "$0409": 1,
+    "$040A": 1,
+    "$040B": 1,
+    "$040C": 1,
+    "$040D": 1,
+    "$040E": 1,
+    "$040F": 1,
+    "$0410": 1,
+    "$0411": 1,
+    "$0412": 1,
+    "$0413": 1,
+    "$0414": 1,
+    "$0415": 1,
+    "$0416": 1,
+    "$0417": 1,
+    "$0419": 1,
+    "$041A": 1,
+    "$041B": 1,
+    "$041C": 1,
+    "$041D": 1,
+    "$041E": 1,
+    "$041F": 1,
+    "$0420": 1,
+    "$0422": 1,
+    "$0423": 1,
+    "$0424": 1,
+    "$0425": 1,
+    "$0426": 1,
+    "$0427": 1,
+    "$0428": 1,
+    "$0429": 1,
+    "$042A": 1,
+    "$042B": 1,
+    "$042C": 1,
+    "$042D": 1,
+    "$042E": 1,
+    "$042F": 1,
+    "$0430": 1,
+    "$0431": 1,
+    "$0432": 1,
+    "$0433": 1,
+    "$0434": 1,
+    "$0435": 1,
+    "$0436": 1,
+    "$0437": 1,
+    "$0438": 1,
+    "$0439": 1,
+    "$043A": 1,
+    "$043B": 1,
+    "$043C": 1,
+    "$043D": 1,
+    "$043E": 1,
+    "$043F": 1,
+    "$0440": 1,
+    "$0441": 1,
+    "$0442": 1,
+    "$0443": 1,
+    "$0444": 1,
+    "$0445": 1,
+    "$0446": 5,
+    "$0447": 5,
+    "$0448": 5,
+    "$0449": 1,
+    "$044A": 1,
+    "$044B": 1,
+    "$044C": 1,
+    "$044D": 1,
+    "$044E": 1,
+    "$044F": 1,
+    "$0450": 1,
+    "$0451": 1,
+    "$0452": 1,
+    "$0453": 1,
+    "$0454": 1,
+    "$0455": 1,
+    "$0456": 1,
+    "$0457": 1,
+    "$0458": 1,
+    "$0459": 1,
+    "$045A": 1,
+    "$045B": 65,
+    "$045C": 9,
+    "$045D": 1,
+    "$045E": 5,
+    "$045F": 1,
+    "$0460": 1,
+    "$0461": 1,
+    "$0462": 1,
+    "$0463": 1,
+    "$0465": 1,
+    "$0466": 1,
+    "$0467": 1,
+    "$0468": 1,
+    "$0469": 1,
+    "$046A": 1,
+    "$046B": 1,
+    "$046C": 1,
+    "$046D": 1,
+    "$046E": 1,
+    "$046F": 1,
+    "$0470": 1,
+    "$0471": 1,
+    "$0472": 1,
+    "$0473": 1,
+    "$0474": 1,
+    "$0475": 1,
+    "$0476": 65,
+    "$0477": 1,
+    "$0478": 9,
+    "$0479": 1,
+    "$047A": 5,
+    "$047B": 1,
+    "$047C": 1,
+    "$047D": 1,
+    "$047E": 1,
+    "$047F": 1,
+    "$0480": 1,
+    "$0481": 1,
+    "$0482": 1,
+    "$0483": 1,
+    "$0484": 9,
+    "$0485": 1,
+    "$0486": 1,
+    "$0487": 1,
+    "$0488": 5,
+    "$0489": 1,
+    "$048A": 1,
+    "$048B": 1,
+    "$048C": 1,
+    "$048D": 1,
+    "$048E": 1,
+    "$048F": 1,
+    "$0490": 1,
+    "$0491": 1,
+    "$0492": 1,
+    "$0493": 1,
+    "$0494": 1,
+    "$0495": 1,
+    "$0496": 5,
+    "$0497": 1,
+    "$0498": 1
+  }
 }

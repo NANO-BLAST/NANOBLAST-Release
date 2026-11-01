@@ -66,3 +66,17 @@ HDMI pin constraints and the verified HDMI packer. The packer reads the existing
 SMS/Game Gear vendor-pad reference, whose SHA256 is
 `3a2f54a827b33371b459519e610605de857c2ebe9e2c10ace02bab44c42567b1`.
 A failed timing route stops the build before packing.
+# Shared SDRAM rendering regression
+
+`run_board.py ROM --out BUILD --render-only` runs the initial AccuracyCoin menu
+through the actual production SDRAM controller with an ideal CL2/BL1 chip and
+the Nano's 3:1 memory clock and 10/16 forwarded-clock phase. It verifies that
+the renderer consumes current bytes despite CPU/PPU contention, and writes
+`rendering.json`, `pixels.bin`, `ram.bin` and input hashes. OAM uses its existing
+behavioral synchronous RAM implementation. This checks digital scheduling;
+electrical and routed I/O timing still require board validation.
+
+The first candidate's late SDRAM request produced 65,580 stale reads in 364,392
+initial-menu samples. Separate early SDRAM prefetch and mapper /RD timing
+reduces that count to zero. The independent-memory fixture alone did not catch
+this fault. Do not treat its 147/147 result as physical console signoff.

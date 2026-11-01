@@ -451,6 +451,7 @@ wire mw_ppu     = mw_int && ppu_write; // Write *to* the PPU.
 wire ppu_cs = addr >= 'h2000 && addr < 'h4000;
 wire [7:0] ppu_dout;            // Data from PPU to CPU
 wire chr_read, chr_write;       // If PPU reads/writes from VRAM
+wire chr_read_mem;             // Earlier request to the shared SDRAM controller
 wire [13:0] chr_addr;           // Address PPU accesses in VRAM
 wire [7:0] chr_from_ppu;        // Data from PPU to VRAM
 wire [7:0] chr_to_ppu;
@@ -471,6 +472,7 @@ PPU ppu(
 	.write            (ppu_cs && mw_ppu),
 	.nmi              (nmi),
 	.vram_r           (chr_read),
+	.vram_r_mem       (chr_read_mem),
 	.vram_w           (chr_write),
 	.vram_a           (chr_addr),
 	.vram_din         (chr_to_ppu),
@@ -578,7 +580,7 @@ assign cpumem_read  = (prg_read & prg_allow) | (prg_write && prg_conflict);
 assign cpumem_write = prg_write && prg_allow;
 assign cpumem_dout  = prg_din;
 assign ppumem_addr  = chr_linaddr;
-assign ppumem_read  = chr_read && !menu_frozen;
+assign ppumem_read  = chr_read_mem && !menu_frozen;
 assign ppumem_write = chr_write && (chr_allow || vram_ce) && !menu_frozen;
 assign ppumem_dout  = chr_from_ppu;
 
