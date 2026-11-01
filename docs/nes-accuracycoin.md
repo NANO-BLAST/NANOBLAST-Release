@@ -1,109 +1,126 @@
-# NES AccuracyCoin validation
+# NES AccuracyCoin validation — r3
 
-The updated NES PPU passes **147/147** tests in the unmodified 147-test
-AccuracyCoin ROM in full-core simulation. The original release source reproduced
-**137/147** with the same ten failures as the supplied hardware screenshot.
+R3 passes **147/147** in the unmodified AccuracyCoin ROM through the production
+shared SDRAM controller. All 147 CPU-written slots and the ROM's final tally
+pass. The original release reproduced **137/147**. Physical console validation
+of r3 is still pending.
 
-The corrected SDRAM-prefetch build passes the complete run at one-master-clock
-synchronous external-memory response latency. The first candidate had also
-passed at three clocks, but subsequently failed hardware rendering. The fixture
-reads the CPU-written result slots and requires the ROM's own finished table to
-show 147/147. It never patches the ROM or forces hardware state.
-
-ROM SHA256:
-`86ec57789bd7421108cd76d22290d8a24e91b49f8b8b3ddcf09df7847357c6d8`.
-Source hashes and machine-readable evidence are in
+ROM SHA256: `86ec57789bd7421108cd76d22290d8a24e91b49f8b8b3ddcf09df7847357c6d8`.
+Source hashes, result slots and evidence are in
 [`validation/nes-accuracycoin.json`](validation/nes-accuracycoin.json).
-The initial accuracy change is commit `41ae2f0` on `codex/nes-accuracycoin-147`;
-the follow-up SDRAM-prefetch correction is recorded in the same branch.
 
-## What changed
+## Correction and failed candidates
 
-The production changes are in `cores/nes/src/ppu.v` and its SDRAM read-enable
-connection in `cores/nes/src/nes.v`: sprite X-counter clocks are
-separate from pixel-shifter clocks; partial fetches update individual slots;
-secondary OAM keeps its address and overflow state; OAM evaluation continues
-correctly after wrap and overflow hits; pre-render sprite fetches retain OAM;
-background planes have their physical serial inputs; and PPUADDR/PPUDATA use
-transfer timing and a persistent low-address latch. Dummy reads use nametable
-addresses. The CPU/APU/DMA engines, mappers, menu, firmware and clock generators
-are unchanged.
+The original accuracy changes (`41ae2f0`) correct sprite counters, partial
+fetches, OAM evaluation/wrap/corruption, pre-render sprite fetches, background
+serial inputs and PPUADDR/PPUDATA transfer timing. CPU/APU/DMA engines, mappers
+and clock generators retain their existing behavior.
 
-## Regression checks
+R1 (`3fe47a86…`) passed the independent-memory fixture but corrupted rendering
+on the console. SDRAM fetches started at the late mapper /RD phase. The shared
+controller reproduced 65,580 stale bytes in 364,392 initial-menu samples. R2
+(`aa3e844`) separated early SDRAM prefetch from logical mapper /RD and restored
+rendering.
 
-- All 20 focused RTL cases pass, including CPU, DMA, APU, frame IRQ, open bus,
-  mapper controls, OAM corruption, sprite counters, scroll arithmetic, palette
-  gating, TMDS and video raster.
-- Region control, NTSC/PAL clock ratios, 262/312-line frames and menu freeze pass.
-- The memory-phase test passes with background traffic: 2,231 requests and 1,111
-  returns, retaining the request/return spacing requirements.
-- Pre-render sprite-range tests cover NTSC line 261 and PAL/Dendy line 311.
-- The obsolete HDMI-reset *trial* is skipped because its module is absent from
-  the release. The actual release's TMDS and raster tests pass.
+R2 (`5e2bcdce…`) then stalled on hardware at test 109, DMA Landing on Write. A
+complete shared-controller run reproduced this; the test/page alone did not.
+A blanking PPUDATA read requested SDRAM on the same PPU phase that captured the
+buffer. CPU memory contention left a stale $02 instead of $A5. The test executes
+open-bus instructions through $3FFF; this wrong byte executed KIL and stopped
+at $4000.
 
-Some older OAM checks observed the bus after the address-advance edge. They now
-sample it before that edge, as the consuming PPU does; expected bytes are
-retained. The Loopy arithmetic check drives completed-read events and drains the
-address-transfer pipeline before its exhaustive arithmetic checks.
+R3 starts the blanking SDRAM request at read-pipeline phase 3 and retains its
+captured address through phases 3 and 4. Buffer completion, mapper /RD, scroll
+increment and rendering bus-conflict timing remain at phase 4. R3 production
+RTL changes are confined to `cores/nes/src/ppu.v`.
 
-## FPGA resources
+The menu also recognizes the exact rc.2 NES, r1 and r2 boot-image fingerprints
+when explicitly saving a replacement with Core boot flash. Its read-before-
+erase guard algorithm is unchanged. Updating BL616 does not automatically save
+a new FPGA startup core.
 
-Both the baseline and candidate synthesize and complete architecture packing for GW2AR-LV18QN88C8/I7.
-The packed candidate uses 78% of LUT slots, 45% of flip-flops and 80% of BSRAM.
+## Required release checks
 
-| Packed resource | Baseline | Candidate | Change |
-|---|---:|---:|---:|
-| LUT slots, including arithmetic implementation | 16,060 | 16,223 | +163 |
-| Flip-flops | 7,037 | 7,091 | +54 |
-| BSRAM blocks | 37 | 37 | 0 |
+`cores/nes/tests/accuracycoin/run_board.py` now runs the entire ROM by default.
+The run starts from reset, uses ordinary controller input, never patches the
+ROM and never forces hardware state. It uses the production CPU, PPU, APU and
+`sdram_nes.v`, an NROM fixture, ideal CL2/BL1 chip pins, the production 3:1 clock
+ratio and forwarded 10/16 phase. OAM uses its existing behavioral synchronous
+RAM; focused OAM tests separately use Gowin's DPB model. Ideal chip pins check
+digital scheduling, not analog or routed I/O behavior.
 
-Yosys reports 12,576 versus 12,723 LUT1–LUT4 cells before architecture packing;
-that +147 cell count is a different measure from packed LUT-slot use.
+- Full shared-controller run: **147/147**, ROM tally **147/147**, stop at frame
+  4,293. Test 109 result $0496 = $05 (pass).
+- Initial rendering: **zero stale bytes in 2,834,160 samples** through frame 99.
+- Original 64-byte CIRAM read-buffer program: **64/64** correct on r3 versus
+  **0/64** on r2, with CPU fetch contention through the actual controller.
+  `test_read_buffer.py` generates it without needing AccuracyCoin.
+- Independent-memory full run: **147/147** on prototype PPU source differing
+  from r3 only in comments/whitespace. Its actual source hashes are retained;
+  the shared run and FPGA build use exact production RTL.
+- All **20** focused RTL cases pass: CPU, DMA, APU, IRQ, open bus, mapper
+  controls, vendor-DPB OAM, sprites, scroll, palette, TMDS and raster.
+- Region control, NTSC/PAL ratios, 262/312-line frames and menu freeze pass.
+- Memory-phase regression passes with 2,231 requests, 1,111 returns and 164
+  background words.
+
+The absent legacy HDMI-reset trial is skipped; release TMDS/raster tests pass.
+Existing OAM tests sample before the address-advance edge, as the PPU does;
+expected bytes are retained. The Loopy check drives completed reads and drains
+the transfer pipeline before its arithmetic checks.
+
+From the repository root, with Verilator and the ROM supplied locally:
+
+```sh
+python3 cores/nes/tests/accuracycoin/run_board.py /path/AccuracyCoin.nes --out /tmp/nes-shared
+python3 cores/nes/tests/accuracycoin/test_read_buffer.py --out /tmp/nes-buffer
+python3 scripts/verify_nes_accuracy_release.py --simulation /tmp/nes-shared/results.json --fpga-manifest /path/fpga/manifest.json --rom /path/AccuracyCoin.nes
+```
+
+`--render-only` is a short diagnostic and cannot satisfy the release gate.
+The gate requires a full shared-controller 147/147 run with RTL hashes matching
+current source and the FPGA build, valid rendering, the three original clock
+targets and 61 checked storage pins.
 
 ## Routed image
 
-The final route passes the actual clock targets, without relaxed periods or
-new timing exceptions:
+Baseline and r3 synthesize, pack and route for GW2AR-LV18QN88C8/I7. R3 uses 79%
+of LUT slots, 46% of flip-flops and 80% of BSRAM.
+
+| Packed resource | Baseline | R3 | Change |
+|---|---:|---:|---:|
+| LUT slots, including arithmetic | 16,060 | 16,366 | +306 |
+| Flip-flops | 7,037 | 7,091 | +54 |
+| BSRAM blocks | 37 | 37 | 0 |
+
+Original clock targets pass without relaxed periods or new timing exceptions:
 
 | Clock | Required MHz | Routed maximum MHz |
 |---|---:|---:|
-| NES | 21.60 | 61.05 |
-| SDRAM | 64.80 | 204.79 |
-| HDMI pixel | 74.25 | 122.61 |
+| NES | 21.60 | 69.03 |
+| SDRAM | 64.80 | 194.14 |
+| HDMI pixel | 74.25 | 113.83 |
 
-The build retains 5,847 unchanged non-PPU register locations from the routed
-release to avoid a dense-design placer failure. Combinational logic and the
-updated PPU remain free to place and route. The compact placement reference and
-its provenance hash are under `cores/nes/constraints/`; the build script applies
-it explicitly and restores the release's actual clock constraints.
+The build reuses 5,845 unchanged non-PPU register locations from the release to
+avoid a dense-design placer failure; changed logic remains free to route.
+Placement provenance is under `cores/nes/constraints/`. All 61 SDRAM/flash pins
+match the routed release. The packer checks eight HDMI PPLVDS pads, the fixed
+907,418-byte image size and configuration footer.
 
-All 61 SDRAM/flash pins match the prior routed design. The packer verifies all
-eight HDMI PPLVDS pads against the vendor fuse reference. The fixed device image
-size and configuration footer pass validation. Raw image SHA256:
-`5e2bcdcebacf4e6ea328bf6eb3a25dc6e44af3bc72ceb617a9599b8a7a6d0612`.
+Raw SHA256: `9f2ee6bd0b989baed39a87cd1a7e832ebb0a44cc48124f507e8aa5d0c3113fdf`.
 
-## Hardware status
+`scripts/build_nes_accuracy.py` records live inputs and stops on failed route
+or timing. The Setup package binds its rebuilt menu to the compressed directory.
+The other three core images remain byte-identical to rc.2. Host verification
+decodes all four using the actual firmware decoder under ASan/UBSan and checks
+package selection/update planning with the native Setup helper.
 
-The first image (`3fe47a86…`) failed physical testing: the NES game screen was
-corrupted after loading it. Updating the BL616 bank alone had initially left the
-older 137/147 NES core running from FPGA boot flash. Switching to another core
-and back exposed the candidate's rendering regression. Do not promote that image.
+## Console validation
 
-The standalone ROM fixture had independent CPU/PPU memory access. With the real
-shared SDRAM controller, starting the rendering request in the mapper /RD half
-of the PPU fetch could return data after the renderer sampled it. An ideal CL2
-SDRAM pin model reproduces 65,580 stale bytes among 364,392 initial-menu samples.
-Separating SDRAM prefetch from mapper /RD restores the earlier request phase:
-the same initial-menu scene has zero stale bytes and readable text. The CPU,
-PPU, memory controller and cartridge ROM execute normally in this regression.
-The chip pins and clocks are ideal; this is not analog timing signoff. OAM uses
-its existing behavioral synchronous RAM implementation in this scheduling test.
-
-`tests/accuracycoin/run_board.py --render-only` within `cores/nes` builds this
-shared-controller regression. The original fixture remains the faster full-ROM
-accuracy test. A physical pass of the corrected image is still required, along
-with representative mapper games/audio, region switching and menu return.
-
-The live-source build script is `scripts/build_nes_accuracy.py`. It records
-inputs and stops before packing if route/timing checks fail. The original
-archived build inputs and the installed release remain the rollback baseline.
+Install the r3 ZIP with Setup Utility. Select Master System / Game Gear, then
+NES / Famicom to explicitly load the new bank image: the saved startup NES can
+remain active after a BL616 update. Run AccuracyCoin, representative games and
+audio, region switching and menu return. Only after successful physical testing
+should Settings > Core boot flash save the new startup core. Do not promote r1
+or r2. The archived release remains the rollback baseline; no console was
+flashed automatically by this work.

@@ -1003,13 +1003,17 @@ reg [13:0] ppudata_address = 0;
 wire vram_r_ppudata = read && ain == 7;
 wire ale_conflict = is_rendering && !cycle[0] && ppudata_read_pipe[4];
 wire [7:0] low_address = ale_conflict ? vram_din : cycle[0] ? address_latch : fetch_address[7:0];
-assign vram_a = !is_rendering ? (ppudata_read_pipe[4] ? ppudata_address : loopy[13:0]) : {fetch_address[13:8],low_address};
+assign vram_a = !is_rendering ? ((ppudata_read_pipe[3] || ppudata_read_pipe[4]) ? ppudata_address : loopy[13:0]) : {fetch_address[13:8],low_address};
 assign vram_r = ppudata_read_pipe[4] || (is_rendering && cycle[0] && !end_of_line);
 // The mapper observes /RD in the second half of each fetch. The shared
 // SDRAM port must start in the first half: a CPU access can occupy its next
 // service slot, and starting at /RD leaves insufficient time before BgPainter
 // and SpriteAddressGen capture the byte. Keep these two bus phases distinct.
-assign vram_r_mem = ppudata_read_pipe[4] || (is_rendering && !cycle[0] && !end_of_line);
+// A buffered CPU read in blanking needs the same head start. Its architectural
+// completion and scroll increment remain at pipe[4]; only the RAM request is
+// early. Rendering reads retain their bus-conflict timing on the physical bus.
+assign vram_r_mem = (is_rendering ? ppudata_read_pipe[4] : ppudata_read_pipe[3]) ||
+                    (is_rendering && !cycle[0] && !end_of_line);
 always @(posedge clk) if (ce) begin
     if (!cycle[0]) address_latch <= ale_conflict ? vram_din : fetch_address[7:0];
     if (vram_r_ppudata) ppudata_address <= loopy[13:0];

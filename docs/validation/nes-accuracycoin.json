@@ -6,63 +6,127 @@
     "ppu_sha256": "ba8c3119e6756b80a7821a9dfa25f068f11b20280c1f6eb81cd46d75a7a90e99"
   },
   "source_sha256": {
+    "artifacts/nes-r3-shared-full/config.v": "66b02dc1f776e605a38618a31b27fc45d918ac639cdba3530001a9c2c0fe5504",
+    "cores/nes/tests/accuracycoin/board_memory.sv": "6ab5af5bec18a7b61a5d50c5f88fc8344348d141e71783cfc508aee2826b7eaf",
     "cores/nes/src/nes.v": "55ac6b2cd1ea3510f01c62a85cc1d060058adafe6bbb7e60373f9a00c99d8c9f",
+    "cores/nes/src/sdram_nes.v": "04cd8c1ba4831b27843e2352733810d2a9fefd7e71375a5f62f80a26de5a6152",
     "cores/nes/src/apu.v": "d6d40b55548c54d2df7ea468ae7787b48667fec743e3ea704b6b0a2516940c03",
-    "cores/nes/src/ppu.v": "26a4040b74b0d6e7a89b2506e754277061c1b667fee9e9641b6e2fa8a698e9fb",
+    "cores/nes/src/ppu.v": "1110677493fbceebea16c98fa50e3e0f5670fa59334aa0601a3c413f0c7df5bd",
     "cores/nes/src/dpram.v": "72aa215d806da15d72dd5cab89d9fd2b16369f0a205423307a1d8e4ccd93fd53",
     "cores/nes/src/t65/T65_Pack.v": "59bc04a9e1e2bb7dddf0d493f43a2ed2e823e99664b48795556d316bbd8dfc75",
     "cores/nes/src/t65/T65_ALU.v": "3f0fbf0c7e6afe64b49bc6deeba62d519841ce709cd1770d241f01dafaa9e3af",
     "cores/nes/src/t65/T65_MCode.v": "eb97668ac1f9909c8211073ed7d133fda5fb815bdce0495a3fbd57e3bf015d5f",
     "cores/nes/src/t65/T65.v": "5cdc01ac2a649358200ef2d98b49a518c4cbdd3d73e7db097fd22af481e670ff",
     "cores/nes/tests/accuracycoin/nrom_fixture.sv": "629fbf19e80fd4bc9d8198383caff97e2645a5e2b3f9787202b1e82cca530676",
-    "cores/nes/tests/accuracycoin/main.cpp": "1a1609486b56b27d70a33feb01bcbd2f0372d47dc03f8a08167eb16a9f455d79"
+    "cores/nes/tests/accuracycoin/board_main.cpp": "50fd91ad80433d6a4382de91ef0298affdb033c8a5615f0b8efc300e52fed12b"
+  },
+  "full_shared_sdram_run": {
+    "rom_sha256": "86ec57789bd7421108cd76d22290d8a24e91b49f8b8b3ddcf09df7847357c6d8",
+    "rendering": {
+      "samples": 2834160,
+      "stale_bytes": 0
+    },
+    "scope": "full ROM with production shared SDRAM controller",
+    "physical_board_pass": false,
+    "passed": 147,
+    "total": 147,
+    "rom_tally": 147,
+    "rom_pass_tally": 147
   },
   "full_rom_runs": [
     {
-      "memory_latency_master_clocks": 1,
+      "memory_model": "independent CPU and PPU ports",
       "passed": 147,
       "total": 147,
       "rom_tally": 147,
       "rom_pass_tally": 147,
-      "verilator": "Verilator 5.053 devel rev v5.052-404-g555f59e8f (mod)"
+      "source_sha256": {
+        "/private/tmp/nes-repro/earlyread-rtl/nes.v": "55ac6b2cd1ea3510f01c62a85cc1d060058adafe6bbb7e60373f9a00c99d8c9f",
+        "/private/tmp/nes-repro/earlyread-rtl/apu.v": "d6d40b55548c54d2df7ea468ae7787b48667fec743e3ea704b6b0a2516940c03",
+        "/private/tmp/nes-repro/earlyread-rtl/ppu.v": "8c6b204f95c765672abc526d581577edada26938142d50a52db16ceb53660fa6",
+        "/private/tmp/nes-repro/earlyread-rtl/dpram.v": "72aa215d806da15d72dd5cab89d9fd2b16369f0a205423307a1d8e4ccd93fd53",
+        "/private/tmp/nes-repro/earlyread-rtl/t65/T65_Pack.v": "59bc04a9e1e2bb7dddf0d493f43a2ed2e823e99664b48795556d316bbd8dfc75",
+        "/private/tmp/nes-repro/earlyread-rtl/t65/T65_ALU.v": "3f0fbf0c7e6afe64b49bc6deeba62d519841ce709cd1770d241f01dafaa9e3af",
+        "/private/tmp/nes-repro/earlyread-rtl/t65/T65_MCode.v": "eb97668ac1f9909c8211073ed7d133fda5fb815bdce0495a3fbd57e3bf015d5f",
+        "/private/tmp/nes-repro/earlyread-rtl/t65/T65.v": "5cdc01ac2a649358200ef2d98b49a518c4cbdd3d73e7db097fd22af481e670ff",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/tests/accuracycoin/nrom_fixture.sv": "629fbf19e80fd4bc9d8198383caff97e2645a5e2b3f9787202b1e82cca530676",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/tests/accuracycoin/main.cpp": "1a1609486b56b27d70a33feb01bcbd2f0372d47dc03f8a08167eb16a9f455d79"
+      },
+      "note": "Prototype source differs from final PPU only in comments and whitespace; exact production RTL validated by full shared run."
     }
   ],
   "focused_rtl_passes": 20,
   "focused_oam_uses_vendor_dpb_model": true,
   "region_check": "pass",
-  "memory_phase_check_with_background": "pass",
-  "shared_sdram_initial_rendering": {
-    "prior_candidate_stale_bytes": 65580,
-    "samples": 364392,
-    "stale_bytes": 0,
-    "scope": "Initial AccuracyCoin menu, ideal CL2/BL1 SDRAM pins, production shared controller; behavioral OAM; does not establish a full ROM pass through the shared controller"
+  "memory_phase_check_with_background": "pass: 2231 requests, 1111 returns, 164 background words",
+  "read_buffer_regression": {
+    "r2": {
+      "reused_simulator": "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/artifacts/dma109-debug/obj/VNESBoard",
+      "rom_sha256": "81e5a9533e2db84fe84f74cb5e9baf65093fefa4bfc5350841a233f92e88a071",
+      "completed": true,
+      "wrong_bytes": 64,
+      "correct_bytes": 0,
+      "expected_hex": "a5a4a7a6a1a0a3a2adacafaea9a8abaab5b4b7b6b1b0b3b2bdbcbfbeb9b8bbba85848786818083828d8c8f8e89888b8a95949796919093929d9c9f9e99989b9a",
+      "actual_hex": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "r3": {
+      "source_sha256": {
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/artifacts/nes-r3-buffer-rebuild/config.v": "66b02dc1f776e605a38618a31b27fc45d918ac639cdba3530001a9c2c0fe5504",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/tests/accuracycoin/board_memory.sv": "6ab5af5bec18a7b61a5d50c5f88fc8344348d141e71783cfc508aee2826b7eaf",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/nes.v": "55ac6b2cd1ea3510f01c62a85cc1d060058adafe6bbb7e60373f9a00c99d8c9f",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/sdram_nes.v": "04cd8c1ba4831b27843e2352733810d2a9fefd7e71375a5f62f80a26de5a6152",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/apu.v": "d6d40b55548c54d2df7ea468ae7787b48667fec743e3ea704b6b0a2516940c03",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/ppu.v": "1110677493fbceebea16c98fa50e3e0f5670fa59334aa0601a3c413f0c7df5bd",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/dpram.v": "72aa215d806da15d72dd5cab89d9fd2b16369f0a205423307a1d8e4ccd93fd53",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/t65/T65_Pack.v": "59bc04a9e1e2bb7dddf0d493f43a2ed2e823e99664b48795556d316bbd8dfc75",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/t65/T65_ALU.v": "3f0fbf0c7e6afe64b49bc6deeba62d519841ce709cd1770d241f01dafaa9e3af",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/t65/T65_MCode.v": "eb97668ac1f9909c8211073ed7d133fda5fb815bdce0495a3fbd57e3bf015d5f",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/src/t65/T65.v": "5cdc01ac2a649358200ef2d98b49a518c4cbdd3d73e7db097fd22af481e670ff",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/tests/accuracycoin/nrom_fixture.sv": "629fbf19e80fd4bc9d8198383caff97e2645a5e2b3f9787202b1e82cca530676",
+        "/Users/ryan/.codex/.chatgpt-projects/g-p-6acffe418adc8191a51ffd9aaac8af25/nanoblast-release/cores/nes/tests/accuracycoin/board_main.cpp": "50fd91ad80433d6a4382de91ef0298affdb033c8a5615f0b8efc300e52fed12b"
+      },
+      "rom_sha256": "81e5a9533e2db84fe84f74cb5e9baf65093fefa4bfc5350841a233f92e88a071",
+      "completed": true,
+      "wrong_bytes": 0,
+      "correct_bytes": 64,
+      "expected_hex": "a5a4a7a6a1a0a3a2adacafaea9a8abaab5b4b7b6b1b0b3b2bdbcbfbeb9b8bbba85848786818083828d8c8f8e89888b8a95949796919093929d9c9f9e99989b9a",
+      "actual_hex": "a5a4a7a6a1a0a3a2adacafaea9a8abaab5b4b7b6b1b0b3b2bdbcbfbeb9b8bbba85848786818083828d8c8f8e89888b8a95949796919093929d9c9f9e99989b9a"
+    }
   },
   "physical_board_result": null,
-  "prior_candidate": {
-    "candidate_sha256": "3fe47a8668655d21ed162c837659223d033aa937a65656f9342044275798640d",
-    "status": "failed",
-    "symptom": "NES game display corrupted after explicitly reloading the candidate; the old power-on core still passed 137/147",
-    "root_cause": "Rendering SDRAM requests moved to the late mapper /RD phase. The standalone fixture did not model contention with CPU accesses."
-  },
+  "prior_candidates": [
+    {
+      "candidate_sha256": "3fe47a8668655d21ed162c837659223d033aa937a65656f9342044275798640d",
+      "status": "failed",
+      "symptom": "NES game display corrupted after explicitly reloading the candidate; the old power-on core still passed 137/147",
+      "root_cause": "Rendering SDRAM requests moved to the late mapper /RD phase. The standalone fixture did not model contention with CPU accesses."
+    },
+    {
+      "candidate_sha256": "5e2bcdcebacf4e6ea328bf6eb3a25dc6e44af3bc72ceb617a9599b8a7a6d0612",
+      "status": "failed",
+      "symptom": "Physical console stalled on test 109 DMA Landing on Write; reproduced in full shared SDRAM simulation.",
+      "root_cause": "Blanking PPUDATA memory request started on the same phase as the buffer capture. A stale $02 byte replaced expected $A5; execution through $3FFF took KIL and stopped at $4000. Individual test/page and initial-rendering smoke tests missed the full-sequence fault."
+    }
+  ],
   "route_status": "passed",
   "fmax": {
     "af_a.clk": {
-      "achieved": 61.04633331298828,
+      "achieved": 69.02740478515625,
       "constraint": 21.60013771057129
     },
     "fclk": {
-      "achieved": 204.79214477539062,
+      "achieved": 194.13705444335938,
       "constraint": 64.8004150390625
     },
     "hclk": {
-      "achieved": 122.60912322998047,
+      "achieved": 113.83039093017578,
       "constraint": 74.25006866455078
     }
   },
-  "raw_sha256": "5e2bcdcebacf4e6ea328bf6eb3a25dc6e44af3bc72ceb617a9599b8a7a6d0612",
+  "raw_sha256": "9f2ee6bd0b989baed39a87cd1a7e832ebb0a44cc48124f507e8aa5d0c3113fdf",
   "checked_storage_pins": 61,
   "checked_hdmi_pads": 8,
-  "reused_storage_locations": 5847,
+  "reused_storage_locations": 5845,
   "packed_resources": {
     "baseline": {
       "LUT4": {
@@ -80,7 +144,7 @@
     },
     "candidate": {
       "LUT4": {
-        "used": 16223,
+        "used": 16366,
         "available": 20736
       },
       "DFF": {
@@ -241,5 +305,39 @@
     "$0496": 5,
     "$0497": 1,
     "$0498": 1
-  }
+  },
+  "release_gate": "scripts/verify_nes_accuracy_release.py: passed exact production RTL, full shared SDRAM 147/147, no stale rendering, all required clocks and 61 storage pins",
+  "menu_change": "Add exact CRC and sample fingerprints for rc.2 NES, nes147 r1 and r2 to recognized prior boot images; persistence guard algorithm is unchanged.",
+  "prior_boot_images_audit": [
+    {
+      "label": "rc.2",
+      "sha256": "97fd6c5072d22f5f5564e62c97bd15bd16c3099d80a6568da0f719fa5d7f6026",
+      "crc32": 4123596740,
+      "sample_crc32": [
+        2729981403,
+        2256462156,
+        860120984
+      ]
+    },
+    {
+      "label": "r1",
+      "sha256": "3fe47a8668655d21ed162c837659223d033aa937a65656f9342044275798640d",
+      "crc32": 2634751874,
+      "sample_crc32": [
+        2729981403,
+        2961839960,
+        2890597209
+      ]
+    },
+    {
+      "label": "r2",
+      "sha256": "5e2bcdcebacf4e6ea328bf6eb3a25dc6e44af3bc72ceb617a9599b8a7a6d0612",
+      "crc32": 4072496802,
+      "sample_crc32": [
+        2729981403,
+        1898369163,
+        3043048716
+      ]
+    }
+  ]
 }
