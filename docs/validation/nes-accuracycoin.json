@@ -52,5 +52,666 @@
     }
   },
   "physical_board_result": null,
-  "route_status": "pending"
+  "route_status": "passed",
+  "packed_resources": {
+    "baseline": {
+      "LUT4": {
+        "used": 16060,
+        "available": 20736
+      },
+      "DFF": {
+        "used": 7037,
+        "available": 15552
+      },
+      "BSRAM": {
+        "used": 37,
+        "available": 46
+      }
+    },
+    "candidate": {
+      "LUT4": {
+        "used": 16284,
+        "available": 20736
+      },
+      "DFF": {
+        "used": 7090,
+        "available": 15552
+      },
+      "BSRAM": {
+        "used": 37,
+        "available": 46
+      }
+    }
+  },
+  "raw_result_slots": {
+    "$0403": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0404": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0405": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0406": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0407": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0408": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0409": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$040A": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$040B": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$040C": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$040D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$040E": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$040F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0410": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0411": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0412": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0413": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0414": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0415": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0416": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0417": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0419": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$041A": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$041B": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$041C": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$041D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$041E": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$041F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0420": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0422": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0423": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0424": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0425": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0426": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0427": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0428": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0429": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$042A": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$042B": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$042C": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$042D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$042E": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$042F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0430": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0431": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0432": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0433": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0434": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0435": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0436": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0437": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0438": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0439": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$043A": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$043B": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$043C": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$043D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$043E": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$043F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0440": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0441": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0442": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0443": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0444": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0445": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0446": {
+      "latency_1": 5,
+      "latency_3": 5
+    },
+    "$0447": {
+      "latency_1": 5,
+      "latency_3": 5
+    },
+    "$0448": {
+      "latency_1": 5,
+      "latency_3": 5
+    },
+    "$0449": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$044A": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$044B": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$044C": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$044D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$044E": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$044F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0450": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0451": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0452": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0453": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0454": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0455": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0456": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0457": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0458": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0459": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$045A": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$045B": {
+      "latency_1": 65,
+      "latency_3": 65
+    },
+    "$045C": {
+      "latency_1": 9,
+      "latency_3": 9
+    },
+    "$045D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$045E": {
+      "latency_1": 5,
+      "latency_3": 5
+    },
+    "$045F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0460": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0461": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0462": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0463": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0465": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0466": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0467": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0468": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0469": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$046A": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$046B": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$046C": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$046D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$046E": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$046F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0470": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0471": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0472": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0473": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0474": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0475": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0476": {
+      "latency_1": 65,
+      "latency_3": 65
+    },
+    "$0477": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0478": {
+      "latency_1": 9,
+      "latency_3": 9
+    },
+    "$0479": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$047A": {
+      "latency_1": 5,
+      "latency_3": 5
+    },
+    "$047B": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$047C": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$047D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$047E": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$047F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0480": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0481": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0482": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0483": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0484": {
+      "latency_1": 9,
+      "latency_3": 9
+    },
+    "$0485": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0486": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0487": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0488": {
+      "latency_1": 5,
+      "latency_3": 5
+    },
+    "$0489": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$048A": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$048B": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$048C": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$048D": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$048E": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$048F": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0490": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0491": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0492": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0493": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0494": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0495": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0496": {
+      "latency_1": 5,
+      "latency_3": 5
+    },
+    "$0497": {
+      "latency_1": 1,
+      "latency_3": 1
+    },
+    "$0498": {
+      "latency_1": 1,
+      "latency_3": 1
+    }
+  },
+  "route_seed": 2,
+  "placement_timeout": 1000,
+  "reused_non_ppu_storage_locations": 5881,
+  "clock_targets_and_fmax": {
+    "af_a.clk": {
+      "achieved": 65.32958984375,
+      "constraint": 21.60013771057129
+    },
+    "fclk": {
+      "achieved": 136.2954864501953,
+      "constraint": 64.8004150390625
+    },
+    "hclk": {
+      "achieved": 122.35408782958984,
+      "constraint": 74.25006866455078
+    }
+  },
+  "placement_reference": "cores/nes/constraints/release-storage-placement.json",
+  "image_checks": {
+    "timing_pass": true,
+    "checked_storage_pin_count": 61,
+    "fmax": {
+      "af_a.clk": {
+        "achieved": 65.32958984375,
+        "constraint": 21.60013771057129
+      },
+      "fclk": {
+        "achieved": 136.2954864501953,
+        "constraint": 64.8004150390625
+      },
+      "hclk": {
+        "achieved": 122.35408782958984,
+        "constraint": 74.25006866455078
+      }
+    },
+    "raw_sha256": "3fe47a8668655d21ed162c837659223d033aa937a65656f9342044275798640d",
+    "raw_bytes": 907418,
+    "board_test": "pending"
+  },
+  "hdmi_pad_verification": "all eight PPLVDS pads matched vendor reference",
+  "implementation_commit": "41ae2f0"
 }
