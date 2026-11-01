@@ -26,7 +26,7 @@ struct View:Platform{
  void clear()override{helpers=false;for(auto&r:grid){std::memset(r,' ',32);r[32]=0;}}
  void menu_theme(bool on)override{theme=on&&!::oled;}
  void text(unsigned x,unsigned y,const char*s)override{if(y<28&&x<32)std::memcpy(grid[y]+x,s,std::min<size_t>(32-x,std::strlen(s)));}
- void button_helpers()override{helpers=true;if(theme){text(10,26,"Select");text(20,26,"Back");}else Platform::button_helpers();}
+ void button_helpers()override{helpers=true;if(theme){text(10,27,"Select");text(20,27,"Back");}else Platform::button_helpers();}
  void panel(bool,unsigned,unsigned,unsigned,unsigned)override{}
  void half_cell_row(int row)override{half_row=row;}
  void selection(bool on,unsigned,unsigned top,unsigned,unsigned)override{highlight=on;selected=top;}

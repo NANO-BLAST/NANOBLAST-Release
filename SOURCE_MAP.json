@@ -3,8 +3,8 @@
   "firmware": "firmware/",
   "exact_core_build_inputs": "build-inputs/ (active synthesis inputs, constraints and recipes only)",
   "game_boy": "cores/gb-colour/",
-  "setup_source_commit": "a10e3e771364e4a7ddddec9603e0b161bbd90192",
-  "release": "v0.4.0-rc.1",
+  "setup_source_commit": "e229de228cb30bc7ad116d78f4d0e276a49771e4",
+  "release": "v0.4.0-rc.2",
   "source_checksums": "SOURCE_SHA256.json",
   "artwork": "src/assets/nanoblast-horizon.png",
   "preview": "tools/console-menu/"

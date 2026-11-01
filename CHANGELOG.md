@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.0-rc.2 — 1 November 2026
+
+- Remove the full-width navy footer; keep original artwork at all four screen edges.
+- Place SNES A Select / B Back helpers outside, beneath the menu panel.
+- Restore the exact artwork beneath helper icons during USB transfer. Cache tile visibility to avoid re-uploading on navigation.
+- Eleven runtime groups, raw/compressed artwork, host navigation and BL616 build pass; physical console review is pending.
+- Four core images unchanged from v0.3.1.
+
+
 ## v0.4.0-rc.1 — Horizon menu candidate
 
 - Blue-sky Horizon theme matching the setup utility, with centred menu choices and one space between words.

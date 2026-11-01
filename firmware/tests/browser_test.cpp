@@ -38,10 +38,10 @@ struct View:nanoblast::Platform{
   assert(std::string(s)!=".."&&std::string(s)!="Back"&&std::string(s).find("Return")==string::npos);
   labels.emplace_back(s);if(x<32&&y<28)std::memcpy(grid[y]+x,s,std::min<unsigned>(n,32-x));
  }
- void panel(bool on,unsigned l,unsigned t,unsigned r,unsigned b)override{assert(on&&l==1&&t==15&&r==31&&b==26);}
+ void panel(bool on,unsigned l,unsigned t,unsigned r,unsigned b)override{assert(on&&l==1&&t==15&&r==31&&b==25);}
  void selection(bool on,unsigned l,unsigned t,unsigned r,unsigned b)override{if(!on){assert(l==0&&t==0&&r==0&&b==0);disabled++;visible_active=0;return;}assert(l==1&&r==31&&t==b&&t>=17&&t<=24);selected.push_back(t);visible_active=t-17;}
  void half_cell_row(int row)override{assert(row==-1);}
- void present()override{assert(std::string(grid[26],32).find("A Select")!=std::string::npos&&std::string(grid[26],32).find("B Back")!=std::string::npos);assert(std::string(grid[15]+10,12)=="GAME LIBRARY");frames++;}
+ void present()override{assert(std::string(grid[27],32).find("A Select")!=std::string::npos&&std::string(grid[27],32).find("B Back")!=std::string::npos);assert(std::string(grid[15]+10,12)=="GAME LIBRARY");frames++;}
  void overlay(bool)override{}void shortcut(bool)override{}
  bool available(unsigned)override{return false;}
  nanoblast::SwitchResult switch_core(unsigned)override{return nanoblast::SwitchResult::Unavailable;}

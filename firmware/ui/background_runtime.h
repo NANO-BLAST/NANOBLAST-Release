@@ -9,3 +9,6 @@ void nanoblast_background_reply(unsigned status);
 void nanoblast_background_oled(bool enabled);
 
 bool nanoblast_background_ready();
+
+// Paint button tiles, or restore the exact original artwork beneath them.
+bool nanoblast_background_helpers(bool visible);

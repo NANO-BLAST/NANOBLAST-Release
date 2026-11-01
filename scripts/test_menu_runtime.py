@@ -8,6 +8,7 @@ with tempfile.TemporaryDirectory(prefix='nanoblast-runtime-') as folder:
         ('overlay',['tests/overlay_test.cpp']),
         ('usb_shortcut',['ui/nanoblast_menu.cpp','tests/usb_shortcut_test.cpp']),
         ('horizon_palette',['ui/nanoblast_menu.cpp','tests/horizon_runtime_test.cpp']),
+        ('helper_tiles',['tests/helper_tiles_test.cpp']),
         ('horizon_layout',['ui/nanoblast_menu.cpp','tests/theme_test.cpp']),
         ('loading',['ui/nanoblast_menu.cpp','tests/loading_runtime_test.cpp']),
         ('gameboy',['ui/nanoblast_menu.cpp','tests/gb_runtime_test.cpp']),

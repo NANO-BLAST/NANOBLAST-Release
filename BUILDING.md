@@ -32,3 +32,5 @@ Run `python3 relocate_build_inputs.py` to rebase the archived `.ys`, `.f` and `.
 ## Horizon artwork and desktop preview
 
 Install Pillow, then run `python3 tools/console-menu/build_artwork.py` to regenerate the embedded artwork. It uses the supplied `src/assets/nanoblast-horizon.png`, the preserved FPGA font and the existing palette/decompression protocol. Run `python3 tools/console-menu/serve.py` and open http://127.0.0.1:1421/ for the actual C++ menu/browser against simulated files. See `docs/horizon-console-menu.md`. The preview does not access hardware.
+
+For current CMake/Ninja, remove the literal `\r\n` from the two `COMMENT "Generate ${BIN_FILE}\r\n"` strings in the private SDK’s `cmake/extension.cmake` before configuring. This affects build messages only.

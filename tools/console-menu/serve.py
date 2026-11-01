@@ -5,7 +5,7 @@ import argparse,subprocess,json
 ROOT=Path(__file__).resolve().parents[2];HERE=Path(__file__).resolve().parent
 p=argparse.ArgumentParser();p.add_argument('--port',type=int,default=1421);a=p.parse_args();binary=Path('/tmp/nanoblast-menu-preview')
 subprocess.run(['c++','-std=c++17','-Wall','-Wextra','-Werror','-I'+str(ROOT/'firmware/ui'),'-I'+str(ROOT/'firmware/storage'),str(ROOT/'firmware/ui/nanoblast_menu.cpp'),str(HERE/'preview.cpp'),'-o',str(binary)],check=True)
-files={'/':(HERE/'index.html','text/html'),'/font.json':(ROOT/'artifacts/horizon-menu/font.json','application/json'),'/horizon.nbbg':(ROOT/'artifacts/horizon-menu/horizon.nbbg','application/octet-stream')}
+files={'/helpers.json':(ROOT/'artifacts/horizon-menu/helpers.json','application/json'),'/':(HERE/'index.html','text/html'),'/font.json':(ROOT/'artifacts/horizon-menu/font.json','application/json'),'/horizon.nbbg':(ROOT/'artifacts/horizon-menu/horizon.nbbg','application/octet-stream')}
 class Handler(BaseHTTPRequestHandler):
  def respond(self,data,kind='application/json',status=200):
   self.send_response(status);self.send_header('Content-Type',kind);self.send_header('Content-Length',str(len(data)));self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(data)

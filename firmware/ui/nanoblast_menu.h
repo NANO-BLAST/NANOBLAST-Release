@@ -11,7 +11,7 @@ struct Platform {
     virtual ~Platform() = default;
     virtual void clear() = 0;
     virtual void menu_theme(bool) {}
-    virtual void button_helpers() {text(8,26,"A Select");text(18,26,"B Back");}
+    virtual void button_helpers() {text(8,27,"A Select");text(18,27,"B Back");}
     virtual void text(unsigned x, unsigned y, const char *value) = 0;
     virtual void panel(bool enabled, unsigned left, unsigned top, unsigned right, unsigned bottom) = 0;
     virtual void black_panel(unsigned left, unsigned top, unsigned right, unsigned bottom) {panel(true,left,top,right,bottom);}
@@ -37,7 +37,7 @@ struct Platform {
     virtual const char *switch_error() {return "Core load failed";}
 };
 void draw_usb_transfer_screen(Platform &p);
-inline void fixed_menu_panel(Platform &p){p.panel(true,1,15,31,26);}
+inline void fixed_menu_panel(Platform &p){p.panel(true,1,15,31,25);}
 class Menu {
 public:
     explicit Menu(Platform &platform, unsigned active_core = 1);

@@ -107,7 +107,7 @@ bool FileChooser::choose_file(string &res) {
                 menu_platform->button_helpers();
                 menu_platform->large_text(false);
                 menu_platform->half_cell_row(-1);
-                menu_platform->panel(true,1,15,31,26);
+                menu_platform->panel(true,1,15,31,25);
                 menu_platform->text(10,15,"GAME LIBRARY");
                 std::string path=curdir.substr(curdir.find(':')+1);
                 if(path.size()>28)path="..."+path.substr(path.size()-25);

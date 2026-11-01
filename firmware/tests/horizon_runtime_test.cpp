@@ -16,26 +16,30 @@ uint32_t last_command(unsigned command){
 }
 int main(){
  using namespace nanoblast::horizon;
- TextFrames frames;Runtime r(frames);r.menu_theme(true);r.clear();r.panel(true,1,15,31,26);r.selection(true,1,17,31,17);r.present();
- auto p=palette();assert(p.size()==19&&p[224]==Blue&&p[226]==Red&&p[227]==Navy);
- for(unsigned i=0;i<HelperColorCount;i++)assert(p[HelperPalette+i]==FooterBackground);
+ TextFrames frames;Runtime r(frames);r.menu_theme(true);r.clear();r.panel(true,1,15,31,25);r.selection(true,1,17,31,17);r.present();
+ auto p=palette();assert(p.size()==11&&p[224]==Blue&&p[226]==Red&&p[227]==Navy);
+ assert(!host_helpers_visible&&host_helpers_calls==1);
  assert(!(last_command(2)&(1u<<20))&&!(last_command(3)&(1u<<20)));
  bytes.clear();r.selection(true,1,19,31,19);p=palette();
  assert(p.size()==2&&p[226]==Navy&&p[228]==Red);
  bytes.clear();r.selection(true,1,19,31,19);assert(palette().empty());
- r.external_screen_changed();r.selection(true,1,19,31,19);assert(palette().size()==12);
+ r.external_screen_changed();r.selection(true,1,19,31,19);assert(palette().size()==11);
  bytes.clear();r.clear();r.button_helpers();r.present();p=palette();
- for(unsigned i=0;i<HelperColorCount;i++)assert(p.at(HelperPalette+i)==HelperColors[i]);
- assert(std::string(screen[26]+10,6)=="Select"&&std::string(screen[26]+20,4)=="Back");
+ assert(host_helpers_visible);
+ assert(std::string(screen[27]+10,6)=="Select"&&std::string(screen[27]+20,4)=="Back");
  bytes.clear();r.clear();r.present();p=palette();
- assert(p.size()==HelperColorCount);
- for(unsigned i=0;i<HelperColorCount;i++)assert(p.at(HelperPalette+i)==FooterBackground);
- assert(std::string(screen[26],32)==std::string(32,' '));
+ assert(p.empty()&&!host_helpers_visible);
+ assert(std::string(screen[27],32)==std::string(32,' '));
+ // Failed tile transfers remain pending and retry, without hiding an error.
+ host_helpers_ok=false;unsigned calls=host_helpers_calls;r.clear();r.button_helpers();r.present();
+ r.clear();r.button_helpers();r.present();assert(host_helpers_calls==calls+2);
+ host_helpers_ok=true;r.clear();r.button_helpers();r.present();calls=host_helpers_calls;
+ r.clear();r.button_helpers();r.present();assert(host_helpers_calls==calls);
  // OLED and failed-artwork paths retain the independent hardware selection.
- r.oled(true);r.menu_theme(true);bytes.clear();r.clear();r.panel(true,1,15,31,26);r.selection(true,1,19,31,19);r.button_helpers();r.present();
- assert(std::string(screen[26]+8,8)=="A Select"&&std::string(screen[26]+18,6)=="B Back");
+ r.oled(true);r.menu_theme(true);bytes.clear();r.clear();r.panel(true,1,15,31,25);r.selection(true,1,19,31,19);r.button_helpers();r.present();
+ assert(std::string(screen[27]+8,8)=="A Select"&&std::string(screen[27]+18,6)=="B Back");
  assert(palette().empty()&&(last_command(2)&(1u<<20))&&(last_command(3)&(1u<<20)));
- host_background_ready=false;TextFrames fallback_frames;Runtime fallback(fallback_frames);fallback.menu_theme(true);bytes.clear();fallback.clear();fallback.panel(true,1,15,31,26);fallback.selection(true,1,16,31,16);fallback.present();
+ host_background_ready=false;TextFrames fallback_frames;Runtime fallback(fallback_frames);fallback.menu_theme(true);bytes.clear();fallback.clear();fallback.panel(true,1,15,31,25);fallback.selection(true,1,16,31,16);fallback.present();
  assert(palette().empty()&&(last_command(2)&(1u<<20))&&(last_command(3)&(1u<<20)));
  host_background_ready=true;
 }

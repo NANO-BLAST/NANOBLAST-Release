@@ -8,6 +8,9 @@
 #ifdef NANOBLAST_RUNTIME_HOST_TEST
 #include "../tests/runtime_platform.h"
 static bool host_background_ready=true;
+static bool host_helpers_visible=false,host_helpers_ok=true;
+static unsigned host_helpers_calls=0;
+static bool nanoblast_background_helpers(bool on){++host_helpers_calls;host_helpers_visible=on;return host_helpers_ok;}
 static bool nanoblast_background_ready(){return host_background_ready;}
 static bool gb_save_flush(){return true;}
 static void gb_save_forget(){}
@@ -152,7 +155,7 @@ public:
     }
     void button_helpers() override {
         helpers_=true;
-        if(themed_menu_){text(10,26,"Select");text(20,26,"Back");}
+        if(themed_menu_){text(10,27,"Select");text(20,27,"Back");}
         else nanoblast::Platform::button_helpers();
     }
     void large_text(bool enabled) override {large_text_=enabled;}
@@ -161,13 +164,9 @@ public:
         if(!composing_)return;
         clear_legacy_logo();
         if(themed_menu_&&(!helpers_known_||helpers_!=shown_helpers_)){
-            using namespace nanoblast::horizon;
-            for(unsigned i=0;i<HelperColorCount;i++){
-                const uint32_t color=helpers_?HelperColors[i]:FooterBackground;
-                taskENTER_CRITICAL();fpga_tx_header(18,5);fpga_tx_byte(HelperPalette+i);
-                fpga_tx_byte(color>>16);fpga_tx_byte(color>>8);fpga_tx_byte(color);taskEXIT_CRITICAL();
+            if(nanoblast_background_helpers(helpers_)){
+                shown_helpers_=helpers_;helpers_known_=true;
             }
-            shown_helpers_=helpers_;helpers_known_=true;
         }
         for(unsigned y=0;y<28;y++)for(unsigned x=0;x<32;) {
             if(shown_valid_&&shown_[y][x]==frame_[y][x]){++x;continue;}

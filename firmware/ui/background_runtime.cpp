@@ -4,6 +4,7 @@
 #include "background_compression.h"
 #include "loading_screen.h"
 #include "background_asset.h"
+#include "background_helpers.h"
 #ifdef NANOBLAST_SD_SETUP_HOST_TEST
 #include "../tests/background_runtime_platform.h"
 #else
@@ -17,7 +18,7 @@
 namespace {
 const char *background_status="not loaded";
 char loaded_status[32];
-bool oled_mode=false,background_ready=false;
+bool oled_mode=false,background_ready=false,helpers_known=false,helpers_visible=false;
 SemaphoreHandle_t ack;
 volatile unsigned ack_status;
 struct Memory: nanoblast::AssetSource {
@@ -42,6 +43,14 @@ struct Transport:nanoblast::BackgroundTransport {
   nanoblast_loading_progress(n,size);
  }
 };
+}
+bool nanoblast_background_helpers(bool visible){
+ if(!nanoblast_background_ready())return false;
+ if(helpers_known&&helpers_visible==visible)return true;
+ helpers_known=false;
+ Transport transport;
+ if(!nanoblast::upload_button_helpers(transport,visible))return false;
+ helpers_visible=visible;helpers_known=true;return true;
 }
 void nanoblast_loading_progress(unsigned loaded,unsigned size){
  unsigned cells=size?(loaded>=size?26:loaded*26/size):0;
@@ -77,7 +86,7 @@ void nanoblast_background_oled(bool enabled){
  }else nanoblast_load_background();
 }
 void nanoblast_load_background(){
- background_ready=false;
+ background_ready=false;helpers_known=false;
  if(oled_mode){
   taskENTER_CRITICAL();fpga_tx_header(17,2);fpga_tx_byte(2);taskEXIT_CRITICAL();
   background_status="off (OLED Mode)";return;
@@ -92,7 +101,7 @@ void nanoblast_load_background(){
  const auto result=nanoblast::upload_background(*decoded,transport);
  switch(result){
   case nanoblast::BackgroundResult::Ready:
-   background_ready=true;
+   background_ready=true;helpers_known=true;helpers_visible=false;
    std::snprintf(loaded_status,sizeof loaded_status,"loaded flash, %lu ms",static_cast<unsigned long>(bflb_mtimer_get_time_ms()-start));
    background_status=loaded_status;break;
   case nanoblast::BackgroundResult::Invalid:background_status="invalid flash artwork";break;

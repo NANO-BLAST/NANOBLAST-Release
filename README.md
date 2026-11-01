@@ -4,7 +4,7 @@ A shared BL616 menu and FPGA console cores for the **Sipeed Tang Nano 20K**.
 
 ## Candidate menu
 
-[v0.4.0-rc.1](https://github.com/NANO-BLAST/NANOBLAST-Release/releases/tag/v0.4.0-rc.1) previews the new Horizon menu: centred choices, a clear gap below the logo and SNES-style A Select / B Back helpers. Firmware and all four cores are included; the core binaries are unchanged from v0.3.1. This candidate passes software checks but needs console testing. v0.3.1 remains the stable release.
+[v0.4.0-rc.2](https://github.com/NANO-BLAST/NANOBLAST-Release/releases/tag/v0.4.0-rc.2) previews the new Horizon menu: centred choices, a clear gap below the logo and SNES-style A Select / B Back helpers beneath the panel. It removes the full-width navy footer from rc.1 so the artwork reaches all display edges. Firmware and all four cores are included; the core binaries are unchanged from v0.3.1. This candidate passes software checks but needs console testing. v0.3.1 remains the stable release.
 
 ## Downloads
 
