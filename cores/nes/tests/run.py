@@ -16,7 +16,7 @@ p.add_argument('--rtl', type=Path, default=Path(__file__).resolve().parents[1] /
 p.add_argument('--iverilog', default='iverilog')
 p.add_argument('--vvp', default='vvp')
 p.add_argument('--out', type=Path, default=Path('backport/simulation'))
-p.add_argument('--test', choices=['mappers', 'apu', 'frame_irq', 'cpu_bus', 'open_bus_cpu', 'dma_cancel', 'io_bus', 'oam_write', 'oam_boundary', 'oam_eval', 'oam_corruption', 'oam_corruption_frame', 'shifter_hold', 'boot_reset', 'ppu', 'cpu', 'hdmi_reset', 'hdmi_video', 'tmds'])
+p.add_argument('--test', choices=['mappers', 'apu', 'frame_irq', 'cpu_bus', 'open_bus_cpu', 'dma_cancel', 'io_bus', 'oam_write', 'oam_boundary', 'oam_eval', 'oam_corruption', 'oam_corruption_frame', 'shifter_hold', 'sprite_counters', 'prerender_sprite', 'boot_reset', 'ppu', 'cpu', 'hdmi_reset', 'hdmi_video', 'tmds'])
 p.add_argument('--define', action='append', default=[])
 p.add_argument('--gowin-primitives', type=Path, help='Installed GW2A prim_sim.v; test actual DPB model without redistributing it')
 a = p.parse_args()
@@ -204,12 +204,17 @@ cases = {
                 a.rtl/'nano20k/config.v', a.rtl/'sdram_nes.v'],
  'ppu': [compatible(a.rtl/'ppu.v'), a.rtl/'dpram.v'],
  'shifter_hold': [compatible(a.rtl/'ppu.v'), a.rtl/'dpram.v'],
+ 'sprite_counters': [compatible(a.rtl/'ppu.v'), a.rtl/'dpram.v'],
+ 'prerender_sprite': [compatible(a.rtl/'ppu.v'), a.rtl/'dpram.v'],
  'oam_corruption': [compatible(a.rtl/'ppu.v'), a.rtl/'dpram.v'],
  'oam_corruption_frame': [compatible(a.rtl/'ppu.v'), a.rtl/'dpram.v'],
  'cpu': [a.rtl/'t65'/f'T65{suffix}.v' for suffix in ['_Pack','_ALU','_MCode','']],
 }
 for name, sources in cases.items():
     if a.test and name != a.test:
+        continue
+    if name == 'hdmi_reset' and not sources[0].exists() and not a.test:
+        print('SKIP legacy hdmi_reset: clock_reset.sv is absent from this release')
         continue
     exe = a.out / f'{name}.vvp'
     bench = Path(__file__).parent / f'tb_{name}.sv'

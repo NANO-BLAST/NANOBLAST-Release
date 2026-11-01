@@ -8,6 +8,7 @@ reg ce=0,reset_line=1,render=0,ptr_load=0,write=0;
 reg [7:0] value=0;
 reg [8:0] cycle=340,scanline=511;
 wire [7:0] data;
+reg [7:0] fetch_data;
 SpriteRAM dut(.clk(clk),.ce(ce),.reset_line(reset_line),.sprites_enabled(render),
 `ifdef SPRITERAM_CORRUPTION_PORTS
  .reset(1'b0),.is_pal(1'b1),
@@ -15,7 +16,7 @@ SpriteRAM dut(.clk(clk),.ce(ce),.reset_line(reset_line),.sprites_enabled(render)
  .exiting_vblank(1'b0),.obj_size(1'b0),.scanline(scanline),.cycle(cycle),
  .oam_bus(data),.oam_ptr_load(ptr_load),.oam_load(write),.data_in(value),.is_vbe(1'b0));
 task tick;begin @(posedge clk);#1;@(negedge clk);end endtask
-task dot;begin ce=0;tick();tick();ce=1;tick();ce=0;end endtask
+task dot;begin ce=0;tick();tick();fetch_data=data;ce=1;tick();ce=0;end endtask
 task address(input [7:0] a);
  begin value=a;ptr_load=1;dot();ptr_load=0;end
 endtask
@@ -45,7 +46,7 @@ initial begin
  render=1;
  for(i=9;i<320;i=i+1) begin
   cycle=i;dot();
-  if(i>=256 && ((i%8!=0 && data!==8'hff) || dut.oam_ptr!==0))
+  if(i>=256 && ((i%8!=0 && fetch_data!==8'hff) || dut.oam_ptr!==0))
    $fatal(1,"secondary clear/fetch reset incorrect at dot %0d: bus %h ptr %h",i,data,dut.oam_ptr);
  end
  // CPU address writes override fetch reset for their CE, then the next
@@ -63,16 +64,16 @@ initial begin
  address(0);reset_line=1;dot();reset_line=0;render=1;
  for(i=0;i<260;i=i+1) begin
   cycle=i;dot();
-  if(i==256 && data!==0) $fatal(1,"copied sprite Y incorrect");
-  if(i==257 && data!==8'h13) $fatal(1,"copied sprite tile incorrect");
-  if(i==258 && data!==1) $fatal(1,"copied sprite attributes incorrect");
-  if(i==259 && data!==8'h22) $fatal(1,"copied sprite X incorrect");
+  if(i==256 && fetch_data!==0) $fatal(1,"copied sprite Y incorrect");
+  if(i==257 && fetch_data!==8'h13) $fatal(1,"copied sprite tile incorrect");
+  if(i==258 && fetch_data!==1) $fatal(1,"copied sprite attributes incorrect");
+  if(i==259 && fetch_data!==8'h22) $fatal(1,"copied sprite X incorrect");
  end
  render=0;cycle=340;reset_line=1;dot();reset_line=0;
  for(i=0;i<64;i=i+1) begin cycle=i;dot();end
  render=1;
  for(i=64;i<258;i=i+1) begin cycle=i;dot();end
- if(data!==8'h13) $fatal(1,"enabling after secondary-clear boundary failed to evaluate");
+ if(fetch_data!==8'h13) $fatal(1,"enabling after secondary-clear boundary failed to evaluate");
  $display("PASS OAM phase boundary: refresh write, line transition, secondary clear, blanking read");
  $finish;
 end

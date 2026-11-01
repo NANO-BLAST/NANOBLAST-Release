@@ -1,0 +1,56 @@
+{
+  "rom_sha256": "86ec57789bd7421108cd76d22290d8a24e91b49f8b8b3ddcf09df7847357c6d8",
+  "baseline": {
+    "passed": 137,
+    "total": 147,
+    "ppu_sha256": "ba8c3119e6756b80a7821a9dfa25f068f11b20280c1f6eb81cd46d75a7a90e99"
+  },
+  "source_sha256": {
+    "cores/nes/src/nes.v": "89051c1ebcf3c0808d2c81aefe4ecb7487b17649d77c7018296c4e8e72d635d8",
+    "cores/nes/src/apu.v": "d6d40b55548c54d2df7ea468ae7787b48667fec743e3ea704b6b0a2516940c03",
+    "cores/nes/src/ppu.v": "e1ad8c65d995c773d40692fd74709cafc9db98008922f26ef0549cff759a3d76",
+    "cores/nes/src/dpram.v": "72aa215d806da15d72dd5cab89d9fd2b16369f0a205423307a1d8e4ccd93fd53",
+    "cores/nes/src/t65/T65_Pack.v": "59bc04a9e1e2bb7dddf0d493f43a2ed2e823e99664b48795556d316bbd8dfc75",
+    "cores/nes/src/t65/T65_ALU.v": "3f0fbf0c7e6afe64b49bc6deeba62d519841ce709cd1770d241f01dafaa9e3af",
+    "cores/nes/src/t65/T65_MCode.v": "eb97668ac1f9909c8211073ed7d133fda5fb815bdce0495a3fbd57e3bf015d5f",
+    "cores/nes/src/t65/T65.v": "5cdc01ac2a649358200ef2d98b49a518c4cbdd3d73e7db097fd22af481e670ff",
+    "cores/nes/tests/accuracycoin/nrom_fixture.sv": "629fbf19e80fd4bc9d8198383caff97e2645a5e2b3f9787202b1e82cca530676",
+    "cores/nes/tests/accuracycoin/main.cpp": "1a1609486b56b27d70a33feb01bcbd2f0372d47dc03f8a08167eb16a9f455d79"
+  },
+  "full_rom_runs": [
+    {
+      "memory_latency_master_clocks": 1,
+      "passed": 147,
+      "total": 147,
+      "rom_tally": 147,
+      "rom_pass_tally": 147,
+      "verilator": "Verilator 5.053 devel rev v5.052-404-g555f59e8f (mod)"
+    },
+    {
+      "memory_latency_master_clocks": 3,
+      "passed": 147,
+      "total": 147,
+      "rom_tally": 147,
+      "rom_pass_tally": 147,
+      "verilator": "Verilator 5.053 devel rev v5.052-404-g555f59e8f (mod)"
+    }
+  ],
+  "focused_rtl_passes": 20,
+  "region_check": "pass",
+  "memory_phase_check_with_background": "pass",
+  "legacy_hdmi_reset_trial": "Skipped: module is not in this release; actual TMDS and video tests pass",
+  "synthesis": {
+    "baseline": {
+      "lut1_through_lut4": 12576,
+      "flip_flops": 6701,
+      "dpb": 33
+    },
+    "candidate": {
+      "lut1_through_lut4": 12774,
+      "flip_flops": 6754,
+      "dpb": 33
+    }
+  },
+  "physical_board_result": null,
+  "route_status": "pending"
+}

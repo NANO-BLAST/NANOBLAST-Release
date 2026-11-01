@@ -7,6 +7,7 @@ reg ce=0,reset_line=1,render=0,ptr_load=0,write=0;
 reg [7:0] value=0;
 reg [8:0] cycle=340;
 wire [7:0] data;
+reg [7:0] fetch_data;
 wire sprite0;
 reg ppu_reset=1,ppu_write=0,ppu_read=0,ppu_ce=1;
 reg [2:0] ppu_address=0;
@@ -24,7 +25,7 @@ SpriteRAM dut(.clk(clk),.ce(ce),.reset_line(reset_line),.sprites_enabled(render)
  .oam_bus(data),.oam_ptr_load(ptr_load),.oam_load(write),.data_in(value),
  .sprite0(sprite0),.is_vbe(1'b0));
 task tick;begin @(posedge clk);#1;@(negedge clk);end endtask
-task dot;begin ce=0;repeat(3) tick();ce=1;tick();ce=0;end endtask
+task dot;begin ce=0;repeat(3) tick();fetch_data=data;ce=1;tick();ce=0;end endtask
 task address(input [7:0] a);
  begin value=a;ptr_load=1;dot();ptr_load=0;end
 endtask
@@ -69,14 +70,14 @@ initial begin
    if(j==73 && dut.oam_ptr!==8'd40)
     $fatal(1,"out-of-range Y did not increment/align at offset %0d",offset);
 `ifdef OAM_COLUMNS_ONLY
-   if(j==256 && data!==0)
+   if(j==256 && fetch_data!==0)
 `else
-   if(j==256 && (sprite0!==1 || data!==0))
+   if(j==256 && (sprite0!==1 || fetch_data!==0))
 `endif
     $fatal(1,"first evaluated sprite flag/Y incorrect at offset %0d",offset);
-   if(j==257 && data!==8'he3) $fatal(1,"secondary tile column follows primary alignment");
-   if(j==258 && data!==0) $fatal(1,"secondary attribute column incorrect");
-   if(j==259 && data!==0) $fatal(1,"secondary X column incorrect");
+   if(j==257 && fetch_data!==8'he3) $fatal(1,"secondary tile column follows primary alignment");
+   if(j==258 && fetch_data!==0) $fatal(1,"secondary attribute column incorrect");
+   if(j==259 && fetch_data!==0) $fatal(1,"secondary X column incorrect");
   end
  end
  // An out-of-range first candidate must not promote a later in-range one.
