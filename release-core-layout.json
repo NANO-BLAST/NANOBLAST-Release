@@ -1,18 +1,27 @@
 {
-  "version": "solid-loading-development",
+  "version": "v0.4.0",
+  "status": "RELEASE",
+  "hardware_tested": true,
+  "core_format": "NBCRXZ01",
+  "firmware": {
+    "file": "nanoblast-firmware.bin",
+    "bytes": 450928,
+    "sha256": "29f2bb35f8f0636d12e5dfd20d2b46ea3e466e2940b6eb530b99636997c828e7",
+    "offset": 262144
+  },
   "assets": [
     {
       "core_id": 1,
       "offset": 2101248,
-      "bytes": 333256,
-      "meta": 1393558769,
+      "bytes": 341916,
+      "meta": 275027772,
       "file": "nes.core",
-      "sha256": "8bc74a92c4a274862f1b7909cd07c8798c40e05d90dd821b9d74e10bb7e2e5a5",
-      "image_sha256": "97fd6c5072d22f5f5564e62c97bd15bd16c3099d80a6568da0f719fa5d7f6026"
+      "sha256": "10fe5cb2cbb457f0019a7c963d4a1832d53eba14fbe0c73d78f6dd05b09f1af4",
+      "image_sha256": "9f2ee6bd0b989baed39a87cd1a7e832ebb0a44cc48124f507e8aa5d0c3113fdf"
     },
     {
       "core_id": 5,
-      "offset": 2437120,
+      "offset": 2445312,
       "bytes": 317320,
       "meta": 2673772498,
       "file": "sms-gamegear.core",
@@ -21,7 +30,7 @@
     },
     {
       "core_id": 7,
-      "offset": 2756608,
+      "offset": 2764800,
       "bytes": 351356,
       "meta": 4112977715,
       "file": "gb-colour.core",
@@ -30,7 +39,7 @@
     },
     {
       "core_id": 2,
-      "offset": 3108864,
+      "offset": 3117056,
       "bytes": 441232,
       "meta": 3971095327,
       "file": "snes-experimental.core",
@@ -38,7 +47,13 @@
       "image_sha256": "af2a281b95acd77b35ea9bbf6cb4d8eb3d85ea42778dd99ca0954459c5a1e232"
     }
   ],
-  "layout_revision": 2486639545,
-  "bank_end": 3551232,
-  "hardware_tested": false
+  "layout_revision": 3887691682,
+  "validation": "Same firmware and core binaries as NES147 r3. Full shared-SDRAM AccuracyCoin simulation 147/147; user subsequently confirmed physical-console 147/147. Native Flasher package validation passes.",
+  "hardware_validation": {
+    "nes_accuracycoin": {
+      "passed": 147,
+      "total": 147,
+      "source": "User-confirmed on the physical Tang Nano 20K; broader game/audio/region testing is separate."
+    }
+  }
 }

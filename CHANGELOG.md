@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.0 — main release
+
+- Promote the byte-identical rc.2 NES147-r3 firmware and core payloads.
+- NES AccuracyCoin: 147/147 in the complete production shared-SDRAM simulation and subsequently confirmed on the physical console by the user.
+- Correct PPUDATA buffered-read timing without changing the other three core payloads.
+- Full-screen Horizon menu and NANOBLAST Flasher v0.2.0 downloads.
+- Release metadata and build core-layout manifest match the r3 bank.
+
+
 ## v0.4.0-rc.2 — 1 November 2026
 
 - Remove the full-width navy footer; keep original artwork at all four screen edges.

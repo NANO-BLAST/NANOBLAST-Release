@@ -2,8 +2,7 @@
 
 R3 passes **147/147** in the unmodified AccuracyCoin ROM through the production
 shared SDRAM controller. All 147 CPU-written slots and the ROM's final tally
-pass. The original release reproduced **137/147**. Physical console validation
-of r3 is still pending.
+pass. The original release reproduced **137/147**. The user subsequently confirmed **147/147 on the physical console**. Broader game/audio/region validation is separate.
 
 ROM SHA256: `86ec57789bd7421108cd76d22290d8a24e91b49f8b8b3ddcf09df7847357c6d8`.
 Source hashes, result slots and evidence are in

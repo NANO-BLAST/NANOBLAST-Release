@@ -93,7 +93,12 @@
       "actual_hex": "a5a4a7a6a1a0a3a2adacafaea9a8abaab5b4b7b6b1b0b3b2bdbcbfbeb9b8bbba85848786818083828d8c8f8e89888b8a95949796919093929d9c9f9e99989b9a"
     }
   },
-  "physical_board_result": null,
+  "physical_board_result": {
+    "passed": 147,
+    "total": 147,
+    "source": "User-confirmed physical Tang Nano 20K test after the r3 package was produced",
+    "scope": "AccuracyCoin; broader compatibility/audio/region coverage is separate"
+  },
   "prior_candidates": [
     {
       "candidate_sha256": "3fe47a8668655d21ed162c837659223d033aa937a65656f9342044275798640d",

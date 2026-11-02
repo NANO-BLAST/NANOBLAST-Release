@@ -2,9 +2,11 @@
 
 A shared BL616 menu and FPGA console cores for the **Sipeed Tang Nano 20K**.
 
-## Candidate menu
+## Current release
 
-[v0.4.0-rc.2](https://github.com/NANO-BLAST/NANOBLAST-Release/releases/tag/v0.4.0-rc.2) previews the new Horizon menu: centred choices, a clear gap below the logo and SNES-style A Select / B Back helpers beneath the panel. It removes the full-width navy footer from rc.1 so the artwork reaches all display edges. Firmware and all four cores are included; the core binaries are unchanged from v0.3.1. This candidate passes software checks but needs console testing. v0.3.1 remains the stable release.
+[NANOBLAST v0.4.0](https://github.com/NANO-BLAST/NANOBLAST-Release/releases/tag/v0.4.0) includes the corrected NES147 r3 core, the full-screen Horizon menu and NANOBLAST Flasher v0.2.0 for Apple Silicon Macs. The NES core passes all 147 AccuracyCoin tests in shared-SDRAM simulation and on the physical console as confirmed by the user. The other three core payloads are unchanged from rc.2; SNES remains experimental.
+
+After flashing, switch to SMS/Game Gear and back to NES to load the updated bank image. Saved startup cores are not replaced automatically. The Flasher is a compact firmware-only updater with no ROM-upload tools or confirmation checkbox. Its Mac installer is ad-hoc signed and not Apple-notarized.
 
 ## Downloads
 
