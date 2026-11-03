@@ -88,6 +88,7 @@ public:
     explicit Runtime(TextFrames &frames):shown_(frames.shown),frame_(frames.frame){}
     bool save_boot_core() override{
         const unsigned id=detected_core();
+        if(id==16){switch_error_="S16: load from SD each boot";return false;}
         if(!id){switch_error_="Choose a core first";return false;}
         if(get_core_id()!=static_cast<int>(id)){
             switch_error_="Active core did not reply";return false;
@@ -96,10 +97,11 @@ public:
         if(result==nanoblast::SwitchResult::Unavailable)switch_error_="Core image not installed";
         return result==nanoblast::SwitchResult::Loaded;
     }
-    void remember_core(int id){detected_core_=id==1||id==5||id==2||id==7?id:-1;}
-    unsigned detected_core() const override {return detected_core_==1||detected_core_==5||detected_core_==2||detected_core_==7?unsigned(detected_core_):0;}
+    void remember_core(int id){detected_core_=id==1||id==5||id==2||id==7||id==16?id:-1;}
+    unsigned detected_core() const override {return detected_core_==1||detected_core_==5||detected_core_==2||detected_core_==7||detected_core_==16?unsigned(detected_core_):0;}
     void external_screen_changed() {shown_valid_=false;themed_rows_=0xffff;helpers_known_=false;}
     void load_artwork() {
+        if(detected_core_==16){clear_legacy_logo();external_screen_changed();return;}
         if(!oled_)nanoblast_loading_screen();
         // A JTAG reload restores the FPGA bitmap even if normal text is blank.
         // Remove it before the artwork loader draws its single LOADING label.
@@ -111,12 +113,19 @@ public:
         external_screen_changed();
     }
 
+    void show_startup_artwork() {
+        if(!nanoblast_background_ready())return;
+        // The loader already disables rectangles. Clear its text directly;
+        // do not run menu composition or helper uploads during startup reveal.
+        ::overlay_clear();
+        external_screen_changed();
+    }
     void oled(bool enabled) override {
         if(oled_==enabled)return;
         oled_=enabled;nanoblast_background_oled(enabled);external_screen_changed();
     }
     void menu_theme(bool enabled) override {
-        const bool active=enabled&&!oled_&&nanoblast_background_ready();
+        const bool active=enabled&&!oled_&&detected_core_!=16&&nanoblast_background_ready();
         if(active!=themed_menu_){themed_menu_=active;themed_rows_=0xffff;helpers_known_=false;panel_known_=false;selection_known_=false;}
     }
     void debug(bool enabled) override {debug_=enabled;}
@@ -155,7 +164,7 @@ public:
     }
     void button_helpers() override {
         helpers_=true;
-        if(themed_menu_){text(10,27,"Select");text(20,27,"Back");}
+        if(themed_menu_){text(14,27,"Select");text(24,27,"Back");text(7,27,"Menu");}
         else nanoblast::Platform::button_helpers();
     }
     void large_text(bool enabled) override {large_text_=enabled;}
@@ -168,6 +177,8 @@ public:
                 shown_helpers_=helpers_;helpers_known_=true;
             }
         }
+        // Keep text letters only while the coloured artwork upload is pending.
+        if(themed_menu_&&helpers_&&(!helpers_known_||!shown_helpers_)){text(12,27,"A");text(22,27,"B");text(0,27,"SEL+ST");}
         for(unsigned y=0;y<28;y++)for(unsigned x=0;x<32;) {
             if(shown_valid_&&shown_[y][x]==frame_[y][x]){++x;continue;}
             unsigned start=x++;
@@ -248,7 +259,7 @@ public:
         shown_valid_=false;logo_cleared_=false;panel_known_=false;selection_known_=false;
         for(unsigned attempt=0;attempt<10;attempt++) {
             int id=get_core_id();
-            if(id==1||id==5||id==2||id==7) {detected_core_=id;nanoblast_switch_trace(nanoblast::SwitchStep::Recovered,id);::overlay(1);load_artwork();return;}
+            if(id==1||id==5||id==2||id==7||id==16) {detected_core_=id;nanoblast_switch_trace(nanoblast::SwitchStep::Recovered,id);::overlay(1);load_artwork();return;}
             delay(20);
         }
     }
@@ -304,7 +315,7 @@ public:
         if(!gb_save_flush())return nanoblast::BrowseResult::Failed;
         FileChooser chooser;
         chooser.menu_platform=this;
-        chooser.menu_title=id==1?"NINTENDO NES":id==5?"SMS / GAME GEAR":id==7?"GAME BOY":"SUPER NINTENDO";
+        chooser.menu_title=id==1?"NINTENDO NES":id==5?"SMS / GAME GEAR":id==7?"GAME BOY":id==16?"SEGA SYSTEM 16":"SUPER NINTENDO";
         // The browser writes directly to the overlay; repaint on return.
         shown_valid_=false;
         if(id==5&&!game_imported_) {
@@ -328,10 +339,10 @@ public:
         shown_valid_=false;
         selection(false,0,0,0,0);
         if(!chosen)return chooser.last_error==FR_OK ? nanoblast::BrowseResult::Cancelled : nanoblast::BrowseResult::Failed;
-        // Replace browser text before loading and reserve a solid box in the centre.
-        clear();large_text(false);half_cell_row(-1);
-        selection(false,0,0,0,0);black_panel(2,12,29,15);
-        text(8,13,"Loading game...");present();
+        // Replace browser text with a label in the middle of the normal menu bounds.
+        menu_theme(true);clear();large_text(false);half_cell_row(-1);
+        selection(false,0,0,0,0);nanoblast::fixed_menu_panel(*this);
+        text(8,20,"Loading game...");present();
         overlay_game_loading(true);
         const int loaded=c->load_rom(name.c_str());
         overlay_game_loading(false);
@@ -343,14 +354,18 @@ public:
         }
         return core_running ? nanoblast::BrowseResult::Loaded : nanoblast::BrowseResult::Failed;
     }
-    void shortcut(bool start) override {
-        option_osd_key=start ? OPTION_OSD_KEY_SELECT_START : OPTION_OSD_KEY_SELECT_RIGHT;
+    void shortcut(bool) override {
+        option_osd_key=OPTION_OSD_KEY_SELECT_START;
     }
     void region(unsigned id,bool pal) override {
         if(id!=1&&id!=5&&id!=2)return;
         // All Nano cores latch bit 2 only at the start of a ROM load.
         // Preserve other configuration flags and the currently running game.
         set_core_config((get_core_config()&~4u)|(pal?4u:0u));
+    }
+    void crt(unsigned preset) override {
+        if(detected_core_!=1&&detected_core_!=5&&detected_core_!=16)return;
+        set_core_config((get_core_config()&~0x30u)|((preset&3u)<<4));
     }
     void verify_core(bool enabled) override {verify_core_=enabled;}
 };
@@ -360,7 +375,7 @@ bool nanoblast_wait_boot_core() {
     const uint64_t started=bflb_mtimer_get_time_ms();
     do{
         const int id=get_core_id();
-        if(id==1||id==5||id==2||id==7){
+        if(id==1||id==5||id==2||id==7||id==16){
             startup_diagnostic=id==7?"Startup: GB from power-on":id==5?"Startup: SMS from power-on":id==2?"Startup: SNES from power-on":"Startup: NES from power-on";
             return true;
         }
@@ -379,13 +394,14 @@ void nanoblast_menu_loop() {
         if(id<0)delay(20);
     }
     runtime.remember_core(id);
-    nanoblast::Menu menu(runtime,id==1 || id==5 || id==2 || id==7 ? id : 0);
+    nanoblast::Menu menu(runtime,id==1 || id==5 || id==2 || id==7 || id==16 ? id : 0);
     runtime.overlay(true);
     // Boot flash has already configured the FPGA. Never reload a saved choice
     // from software at startup. Saving is an explicit menu action only.
+    // Prime the renderer using the established pre-artwork startup sequence.
     menu.redraw();
     nanoblast_switch_trace_boot();
-    if(id==1 || id==5 || id==2 || id==7)runtime.load_artwork();
+    if(id==1 || id==5 || id==2 || id==7 || id==16){runtime.load_artwork();runtime.show_startup_artwork();}
     nanoblast_clock_service();
     menu.redraw();
     uint16_t hid1_old=0xffff,hid2_old=0xffff;

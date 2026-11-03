@@ -106,8 +106,10 @@ int16_t get_core_id(void) {
         xSemaphoreGive(state_mutex);
     }
 
-    // send command 1
+    // Keep the probe frame atomic with respect to USB/UART task traffic.
+    taskENTER_CRITICAL();
     fpga_tx_header(0x01, 1);
+    taskEXIT_CRITICAL();
 
     // TODO: use a queue for better performance
     uint64_t start = bflb_mtimer_get_time_ms();

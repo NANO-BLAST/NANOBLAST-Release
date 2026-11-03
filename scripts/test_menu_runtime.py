@@ -6,6 +6,8 @@ ROOT=Path(__file__).resolve().parents[1]/'firmware'
 with tempfile.TemporaryDirectory(prefix='nanoblast-runtime-') as folder:
     for name,sources in [
         ('overlay',['tests/overlay_test.cpp']),
+        ('uart_receive',['tests/uart_receive_test.cpp']),
+        ('crt',['ui/nanoblast_menu.cpp','tests/crt_menu_test.cpp']),
         ('usb_shortcut',['ui/nanoblast_menu.cpp','tests/usb_shortcut_test.cpp']),
         ('horizon_palette',['ui/nanoblast_menu.cpp','tests/horizon_runtime_test.cpp']),
         ('helper_tiles',['tests/helper_tiles_test.cpp']),
@@ -13,6 +15,7 @@ with tempfile.TemporaryDirectory(prefix='nanoblast-runtime-') as folder:
         ('loading',['ui/nanoblast_menu.cpp','tests/loading_runtime_test.cpp']),
         ('gameboy',['ui/nanoblast_menu.cpp','tests/gb_runtime_test.cpp']),
         ('browser',['tests/browser_test.cpp']),
+        ('nes_loader',['tests/nes_loader_test.cpp']),
         ('sms_loader',['tests/sms_loader_test.cpp']),
         ('gb_loader',['tests/gb_loader_test.cpp']),
         ('snes_loader',['tests/snes_loader_test.cpp']),

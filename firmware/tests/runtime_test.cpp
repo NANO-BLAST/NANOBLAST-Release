@@ -101,9 +101,9 @@ void overlay_game_loading(bool enabled){game_loading=enabled;}
 std::string loaded_rom,chosen_rom="game.sms";
 int load_rom(const char*path){
  loaded_rom=path;
- assert(game_loading&&std::string(screen[13]+8,15)=="Loading game...");
- for(unsigned y=0;y<28;++y)if(y!=13)for(char c:screen[y])assert(c==' ');
- const uint32_t panel=0x03300000u|(15u<<15)|(12u<<10)|(29u<<5)|2u;
+ assert(game_loading&&std::string(screen[20]+8,15)=="Loading game...");
+ for(unsigned y=0;y<28;++y)if(y!=20)for(char c:screen[y])assert(c==' ');
+ const uint32_t panel=0x03000000u|(25u<<15)|(15u<<10)|(31u<<5)|1u;
  const std::vector<uint8_t> command={0xaa,0,5,0x0e,uint8_t(panel>>24),uint8_t(panel>>16),uint8_t(panel>>8),uint8_t(panel)};
  assert(std::search(bytes.begin(),bytes.end(),command.begin(),command.end())!=bytes.end());
  core_running=rom_result==0;return rom_result;

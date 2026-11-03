@@ -40,6 +40,22 @@ initial begin
  if(count!=1||loading||writes!=1||last_word!=32'h00020e5a)$fatal(1,"serial text/ROM");
  frame(5,9);send(0);send(1);send(0);send(8'h80);repeat(5)@(negedge clk);
  if(usb1!=1||usb2!=128)$fatal(1,"USB controller injection");
+ // Settings changes while the menu is open must wait for the next load.
+ frame(2,8);send(1);
+ for(integer reload=0;reload<4;reload=reload+1)begin
+  frame(5,3);send(0);send(0);send(0);send(reload[0]?8'h34:8'h30);
+  repeat(5)@(negedge clk);
+  if(pal!==(reload==0?1'b1:!reload[0]))$fatal(1,"Settings changed running region");
+  frame(2,6);send(1);repeat(5)@(negedge clk);
+  if(pal!==reload[0] || !overlay)$fatal(1,"menu-open region load boundary");
+  // A configuration update during a load is deferred too.
+  frame(5,3);send(0);send(0);send(0);send(reload[0]?8'h30:8'h34);
+  repeat(5)@(negedge clk);
+  if(pal!==reload[0])$fatal(1,"mid-load configuration changed region");
+  frame(2,6);send(0);repeat(5)@(negedge clk);
+  if(pal!==reload[0])$fatal(1,"load completion changed region");
+ end
+
  frame(5,14);send(2);send(8'h17);send(8'h3b);send(8'h83);repeat(20)@(negedge clk);
  if(dut.disp.selection_box!==21'h173b83||dut.disp.selection_pixel!==21'h173b83)$fatal(1,"UART selection rectangle/CDC");
  frame(5,14);send(2);send(0);send(0);send(0);repeat(20)@(negedge clk);

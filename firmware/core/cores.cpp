@@ -38,6 +38,7 @@ void init_core_list() {
         {4, "MegaDrive / Genesis", "genesis", "mdtang.bin", loadmd, create_default_menu},
         {5, "Master System / Game Gear", "sms", "smstang.bin", loadsms, create_default_menu},
         {7, "Nintendo Game Boy", "gb", "gbtang.bin", loadgb, create_default_menu},
+        {16, "Sega System 16 (experimental)", "system16", "s16tang.bin", loads16, create_default_menu},
         {6, "IBM PC/XT", "pc", "pctang.bin", loadpc, create_pcxt_menu}
     };
 

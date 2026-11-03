@@ -1,59 +1,61 @@
 {
-  "version": "v0.4.0",
-  "status": "RELEASE",
+  "version": "v0.4.1",
+  "status": "STABLE",
   "hardware_tested": true,
   "core_format": "NBCRXZ01",
   "firmware": {
     "file": "nanoblast-firmware.bin",
-    "bytes": 450928,
-    "sha256": "29f2bb35f8f0636d12e5dfd20d2b46ea3e466e2940b6eb530b99636997c828e7",
+    "bytes": 463872,
+    "sha256": "71278fb69c84592d721a8c51709d23c5a531e22e52067bc26a7eb84775ea6fb2",
     "offset": 262144
   },
   "assets": [
     {
       "core_id": 1,
       "offset": 2101248,
-      "bytes": 341916,
-      "meta": 275027772,
-      "file": "nes.core",
-      "sha256": "10fe5cb2cbb457f0019a7c963d4a1832d53eba14fbe0c73d78f6dd05b09f1af4",
-      "image_sha256": "9f2ee6bd0b989baed39a87cd1a7e832ebb0a44cc48124f507e8aa5d0c3113fdf"
+      "bytes": 338496,
+      "meta": 2618236890,
+      "file": "cores/nes.core",
+      "sha256": "0197571284b6e9370ed57cfbaf03675904a6abb370ac60ea376021a05ba387b3",
+      "image_sha256": "6663bf709474ec4af7eaf81a4a892def169f1ff12c77166ac304d61be8d08db7"
     },
     {
       "core_id": 5,
-      "offset": 2445312,
-      "bytes": 317320,
-      "meta": 2673772498,
-      "file": "sms-gamegear.core",
-      "sha256": "bc1a39bfc2e08859b5d0a56fd962fc5da3b818afedbb07df14dff0b71170ab1b",
-      "image_sha256": "9b3c4a710380e6d58b5a457fb9fa942f65967563d936fff3fd2000bad296f7d0"
+      "offset": 2441216,
+      "bytes": 331076,
+      "meta": 175874199,
+      "file": "cores/sms-gamegear.core",
+      "sha256": "96d7aaee26e8aea85e05934ea925e6b4f693e3d13af8f9b92738af122460396a",
+      "image_sha256": "0a05ba97c998624352c3535c335842a90486da69d8c18bbb6d58034da18ef9c8"
     },
     {
       "core_id": 7,
-      "offset": 2764800,
+      "offset": 2772992,
       "bytes": 351356,
       "meta": 4112977715,
-      "file": "gb-colour.core",
+      "file": "cores/gb-colour.core",
       "sha256": "cda9a8dcbae099819672edd60cdaf1e46305df856738a078e22bc589d0dd1b88",
       "image_sha256": "9b54ff415fc58dfc6ef2d6ab7237cfea553611332070c818cf1d478a9d02d4b0"
     },
     {
       "core_id": 2,
-      "offset": 3117056,
+      "offset": 3125248,
       "bytes": 441232,
       "meta": 3971095327,
-      "file": "snes-experimental.core",
+      "file": "cores/snes-experimental.core",
       "sha256": "cc9e7c867e5baff687b556a12338847fadbae64e07333985ee3556b5613e3ee5",
       "image_sha256": "af2a281b95acd77b35ea9bbf6cb4d8eb3d85ea42778dd99ca0954459c5a1e232"
     }
   ],
-  "layout_revision": 3887691682,
-  "validation": "Same firmware and core binaries as NES147 r3. Full shared-SDRAM AccuracyCoin simulation 147/147; user subsequently confirmed physical-console 147/147. Native Flasher package validation passes.",
+  "layout_revision": 1221835424,
+  "validation": "Maintainer requested stable promotion after reporting r12 appears working on hardware. Firmware and four FPGA core payloads are byte-identical to r12. Full AccuracyCoin validation remains manual/pending; no 147/147 claim for this build.",
+  "release_date": "2026-11-03",
+  "promoted_from": "v0.4.0-rc.2-crt-r12",
   "hardware_validation": {
-    "nes_accuracycoin": {
-      "passed": 147,
-      "total": 147,
-      "source": "User-confirmed on the physical Tang Nano 20K; broader game/audio/region testing is separate."
-    }
+    "reported_by": "maintainer/user",
+    "report": "That seems to be working now",
+    "date": "2026-11-03",
+    "scope": "r12 working confirmation following r11 NES loading failure",
+    "accuracycoin_full_suite": "Not claimed; manual validation retained"
   }
 }

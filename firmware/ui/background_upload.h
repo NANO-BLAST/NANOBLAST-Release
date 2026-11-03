@@ -7,6 +7,8 @@ struct AssetSource {virtual ~AssetSource()=default;virtual uint32_t size()=0;vir
 struct BackgroundTransport {
  virtual ~BackgroundTransport()=default;
  virtual void enable(bool)=0;
+ // Pause live DMA before modifying the indexed framebuffer.
+ virtual void pause_scanout(){enable(false);}
  virtual void palette(uint32_t)=0;
  virtual bool pixels(uint32_t address,const uint8_t *data,unsigned size)=0;
  virtual void progress(unsigned,unsigned)=0;

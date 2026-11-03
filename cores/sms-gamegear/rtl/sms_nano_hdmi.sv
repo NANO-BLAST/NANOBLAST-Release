@@ -2,6 +2,7 @@
 // SMS CRAM supplies two bits per channel; storing the resolved color at each
 // pixel preserves raster palette changes without a large RGB444 framebuffer.
 module sms_nano_hdmi(
+ input wire [1:0] crt_mode,
  input wire clk,resetn,pixel_resetn,clk_pixel,clk_5x_pixel,
  input wire ce_pix,game_gear,input wire[7:0]gamegear_top,input wire[8:0]x,y,input wire[11:0]color,
  input wire[8:0]height,input wire[15:0]audio_l,audio_r,
@@ -120,12 +121,48 @@ always @(posedge clk_pixel)begin
 end
 wire[23:0]gg_rgb={{2{pixel_pair[3:0]}},{2{pixel_pair[7:4]}},{2{pixel_pair[11:8]}}};
 wire[23:0]game_rgb=game_window&&init_pixel?(gear_pixel?gg_rgb:decode_color(pixel)):24'd0;
+
+// CRT presets: 0 bypass, 1 light scanlines, 2 strong scanlines, 3 mask + light.
+// Shift/subtract arithmetic: no framebuffer, DSP, or extra video pipeline stage.
+function automatic [23:0] crt_filter(input [23:0] c, input [1:0] mode,
+                                  input dark_line, input [1:0] stripe);
+ reg [7:0] rr,gg,bb;
+ begin
+  rr=c[23:16];gg=c[15:8];bb=c[7:0];
+  if(mode!=0 && dark_line)begin
+   if(mode==2)begin rr=rr>>1;gg=gg>>1;bb=bb>>1;end
+   else begin rr=rr-(rr>>2);gg=gg-(gg>>2);bb=bb-(bb>>2);end
+  end
+  if(mode==3)begin
+   if(stripe!=0)rr=rr-(rr>>3);
+   if(stripe!=1)gg=gg-(gg>>3);
+   if(stripe!=2)bb=bb-(bb>>3);
+  end
+  crt_filter={rr,gg,bb};
+ end
+endfunction
+wire [1:0] crt_pending;
+reg [1:0] crt_active;
+cdc_mailbox #(.WIDTH(2)) crt_cdc(.src_clk(clk),.src_resetn(resetn),.src_data(crt_mode),
+ .dst_clk(clk_pixel),.dst_resetn(pixel_resetn),.dst_data(crt_pending));
+// Apply complete settings only at a frame boundary.
+always @(posedge clk_pixel)begin
+ if(!pixel_resetn)crt_active<=0;
+ else if(cx==0 && cy==0)crt_active<=crt_pending;
+end
+// Three output columns per repeating RGB mask, implemented with a tiny counter.
+reg [1:0] crt_stripe;
+always @(posedge clk_pixel)begin
+ if(!pixel_resetn || cx==0)crt_stripe<=0;
+ else crt_stripe<=crt_stripe==2?0:crt_stripe+1'b1;
+end
+
 reg[23:0]rgb;
 // textdisp updates its first valid pixel at cx256 on this same edge.
 // The compositor sees the preceding registered color, as in the NES scanout.
 wire text_window=cx>=257&&cx<1024&&cy>=24&&cy<696;
 always @(posedge clk_pixel)begin
- rgb<=game_rgb;
+ rgb<=crt_filter(game_rgb,crt_active,yphase>=480,crt_stripe);
  if(overlay_pixel)begin
   rgb<={2'b0,game_rgb[23:18],2'b0,game_rgb[15:10],2'b0,game_rgb[7:2]};
   if(background_valid)begin

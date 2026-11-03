@@ -97,7 +97,7 @@ static inline void delay(uint32_t ms)
 #define OPTION_OSD_KEY_SELECT_RIGHT 2
 
 extern int option_osd_key;
-#define OSD_KEY_CODE (option_osd_key == OPTION_OSD_KEY_SELECT_START ? 0xC : 0x84)
+#define OSD_KEY_CODE 0xC
 
 extern void set_loading_state(int state);
 extern volatile uint32_t fpga_status_sequence;

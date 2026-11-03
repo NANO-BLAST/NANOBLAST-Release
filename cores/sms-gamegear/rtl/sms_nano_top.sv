@@ -28,6 +28,7 @@ controller_ds2 #(.FREQ(64_800_000))dualshock1(.clk(clk),.snes_buttons(ds1),.ds_c
 controller_ds2 #(.FREQ(64_800_000))dualshock2(.clk(clk),.snes_buttons(ds2),.ds_clk(ds_clk2),.ds_miso(ds_miso2),.ds_mosi(ds_mosi2),.ds_cs(ds_cs2));
 wire overlay,loading,load_valid,configured_pal,game_gear;
 wire pal=configured_pal&&!game_gear;
+wire [1:0] crt_mode;
 wire[7:0]debug_index,gamegear_top;
 wire[31:0]debug_value=debug_index==0?32'h53474731:debug_index==1?{31'd0,game_gear}:32'd0;
 wire[7:0]load_data;wire[10:0]overlay_x;wire[9:0]overlay_y;wire[15:0]overlay_color;
@@ -39,7 +40,7 @@ nanoblast_iosys #(.CORE_ID(5),.ENABLE_DIAGNOSTICS(1),.FREQ(64_800_000))transport
  .clk(clk),.hclk(hclk),.resetn(resetn),.uart_rx(UART_RXD),.uart_tx(UART_TXD),
  .joy1(pad1|ds1),.joy2(pad2|ds2),.usb_joy1(hid1),.usb_joy2(hid2),
  .overlay_x(overlay_x),.overlay_y(overlay_y),.overlay_color(overlay_color),.overlay(overlay),
- .rom_loading(loading),.rom_do(load_data),.rom_do_valid(load_valid),.nes_pal(configured_pal),.game_gear(game_gear),
+ .rom_loading(loading),.rom_do(load_data),.rom_do_valid(load_valid),.nes_pal(configured_pal),.crt_mode(crt_mode),.game_gear(game_gear),
  .sd_clk(sd_clk),.sd_mosi(sd_cmd),.sd_cs_n(sd_dat3),.sd_miso(sd_dat0),
  .background_enable(background_enable),.background_oled(background_oled),.background_palette_we(palette_we),.background_palette_data(palette_data),
  .rv_valid(rv_valid),.rv_ready(rv_ready),.rv_addr(rv_addr),.rv_wdata(rv_wdata),.rv_wstrb(rv_wstrb));
@@ -81,7 +82,8 @@ sms_nano_hdmi video(
  .game_gear(game_gear),.gamegear_top(gamegear_top),.ce_pix(ce_pix),.x(x),.y(y),.color(color),.height(height),
  .audio_l(overlay?16'd0:audio_l),.audio_r(overlay?16'd0:audio_r),
  .overlay(overlay),.overlay_x(overlay_x),.overlay_y(overlay_y),.overlay_color(overlay_color),
- .background_rgb(background_rgb),.background_valid(background_valid),
+ .crt_mode(crt_mode),
+    .background_rgb(background_rgb),.background_valid(background_valid),
  .tmds_clk_n(tmds_clk_n),.tmds_clk_p(tmds_clk_p),.tmds_d_n(tmds_d_n),.tmds_d_p(tmds_d_p));
 assign led=~{fault,running};
 endmodule

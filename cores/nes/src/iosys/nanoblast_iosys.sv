@@ -22,6 +22,7 @@ module nanoblast_iosys #(
     output wire [7:0] rom_do,
     output wire rom_do_valid,
     output reg nes_pal,
+    output wire [1:0] crt_mode,
     output wire sd_clk,sd_mosi,sd_cs_n,input wire sd_miso,
     output wire flash_clk,flash_mosi,flash_cs_n,input wire flash_miso,
     output wire background_enable,background_oled,background_palette_we,output wire[31:0]background_palette_data,
@@ -32,6 +33,7 @@ always @(posedge clk) begin uart_rx_sync1<=uart_rx;uart_rx_sync2<=uart_rx_sync1;
 wire [7:0] received,transmit;
 wire received_valid,transmit_valid,transmit_busy;
 wire [31:0] text_word,core_config;
+assign crt_mode=core_config[5:4];
 wire text_we;
 wire [15:0] hid1,hid2;
 assign usb_joy1=hid1[11:0];assign usb_joy2=hid2[11:0];

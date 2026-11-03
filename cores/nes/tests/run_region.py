@@ -41,6 +41,7 @@ if a.memory_phases:
  block=top[start:top.index('///////////////////////////',start)]
  (a.out/'reference_clock.sv').write_text('''module reference_clock(input clk,sys_resetn,loading,
  output reg clkref,output reg reset_nes=1);
+ wire loader_done=1'b1,loader_fail=1'b0,menu_paused=1'b0;
  reg loading_r;always @(posedge clk)loading_r<=loading;
  '''+block+'\nendmodule\n')
  extra.append(str(a.out/'reference_clock.sv'))

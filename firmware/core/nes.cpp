@@ -24,5 +24,26 @@ int loadnes(const char *fname){
  }
  const int closed=file.close();if(result==FR_OK)result=closed;
  set_loading_state(0);if(result!=FR_OK)return result;
- core_running=true;overlay(0);return FR_OK;
+ // The loader, menu DMA drain and NES reset release are separate stages.
+ // New cores report real status; legacy cores keep their ready-bit protocol.
+ const uint64_t started=bflb_mtimer_get_time_ms();int state=-1;
+ while(bflb_mtimer_get_time_ms()-started<3000){
+  state=get_fpga_load_status();
+  if(state>=0&&(state&2)){overlay_message("NES loader rejected ROM",1);return FR_INT_ERR;}
+  if(state>=0&&(state&1))break;
+  delay(2);
+ }
+ if(state<0||!(state&1)){overlay_message("NES loader timeout",1);return FR_TIMEOUT;}
+ overlay(0);
+ if(state&0x80){
+  const uint64_t released=bflb_mtimer_get_time_ms();bool running=false;
+  while(bflb_mtimer_get_time_ms()-released<1000){
+   state=get_fpga_load_status();
+   if(state>=0&&(state&2)){overlay(1);return FR_INT_ERR;}
+   if(state>=0&&(state&4)&&!(state&0x38)){running=true;break;}
+   delay(2);
+  }
+  if(!running){overlay(1);overlay_message("NES reset handoff timeout",1);return FR_TIMEOUT;}
+ }
+ core_running=true;return FR_OK;
 }

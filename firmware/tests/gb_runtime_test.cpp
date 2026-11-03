@@ -62,7 +62,7 @@ void nanoblast_load_background(){
   }
   require_logo_cleared=false;
  }
- if(loop_test)assert(std::string(screen[15],32).find("Games")!=std::string::npos);
+ if(loop_test)assert(std::string(screen[15],32).find("MAIN MENU")!=std::string::npos);
  // Production artwork clears all live text outside the frame compositor.
  std::memset(screen,' ',sizeof screen);
  std::memcpy(screen[14]+2,"[==========================]",28);
@@ -74,7 +74,7 @@ const char *nanoblast_background_fallback_sd(){return "";}
 uint32_t uart_receive_count(){return 123;}
 uint32_t uart_receive_dropped(){return 0;}
 const char *fpga_sd_diagnostic(){return "SD ready";}
-void nanoblast_prepare_background(){++background_preparations;if(loop_test)assert(std::string(screen[15],32).find("Games")!=std::string::npos);}
+void nanoblast_prepare_background(){++background_preparations;if(loop_test)assert(std::string(screen[15],32).find("MAIN MENU")!=std::string::npos);}
 const char *nanoblast_background_setup_status(){return "test";}
 const char *nanoblast_background_setup_diagnostic(){return "";}
 int nanoblast_sd_mount_result=0;

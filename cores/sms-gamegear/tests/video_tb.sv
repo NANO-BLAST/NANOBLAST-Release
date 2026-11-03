@@ -4,7 +4,7 @@ reg clk=0,pclk=0;always #10 clk=~clk;always #7 pclk=~pclk;
 reg resetn=0,ce=0,overlay=0,bg_valid=0;reg[8:0]x=0,y=0,height=192;
 reg[11:0]color=0;reg[15:0]osd=0;reg[23:0]bg=24'h804020;
 wire[10:0]ox;wire[9:0]oy;
-sms_nano_hdmi dut(.game_gear(1'b0),.gamegear_top(8'd24),.clk(clk),.resetn(resetn),.pixel_resetn(resetn),.clk_pixel(pclk),.clk_5x_pixel(pclk),
+sms_nano_hdmi dut(.crt_mode(2'd0),.game_gear(1'b0),.gamegear_top(8'd24),.clk(clk),.resetn(resetn),.pixel_resetn(resetn),.clk_pixel(pclk),.clk_5x_pixel(pclk),
  .ce_pix(ce),.x(x),.y(y),.color(color),.height(height),.audio_l(16'd0),.audio_r(16'd0),
  .overlay(overlay),.overlay_x(ox),.overlay_y(oy),.overlay_color(osd),.background_rgb(bg),.background_valid(bg_valid),
  .tmds_clk_n(),.tmds_clk_p(),.tmds_d_n(),.tmds_d_p());

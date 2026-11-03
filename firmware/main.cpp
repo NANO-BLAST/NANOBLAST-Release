@@ -45,7 +45,7 @@ extern "C" {
 /////////////////////////////////////////////////////////////////////////////////
 // Global state
 
-int option_osd_key = OPTION_OSD_KEY_SELECT_RIGHT;
+int option_osd_key = OPTION_OSD_KEY_SELECT_START;
 int16_t active_core = -1;           // firmware detected this core as active
 bool core_running;                  // a rom is loaded and running on the core
 struct core_info *core;

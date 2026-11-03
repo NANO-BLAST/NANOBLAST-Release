@@ -85,7 +85,7 @@ void overlay_status(const char *fmt, ...) {
 
     if (game_loading) {
         // Replace the entire progress row so shorter updates leave no stale text.
-        // The runtime has cleared the browser and placed a solid black box here.
+        // Show progress below the centred loading label inside the menu bounds.
         char row[33];
         std::fill(row, row+32, ' ');
         row[32] = 0;
@@ -94,7 +94,7 @@ void overlay_status(const char *fmt, ...) {
         while(length && buf[length-1]==' ') --length;
         const unsigned left=3+(26-length)/2;
         std::copy(buf,buf+length,row+left);
-        overlay_cursor(0, 14);
+        overlay_cursor(0, 22);
         overlay_printf("%s", row);
         return;
     }

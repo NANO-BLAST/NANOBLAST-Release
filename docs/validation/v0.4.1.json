@@ -1,0 +1,42 @@
+{
+  "version": "v0.4.1",
+  "status": "STABLE",
+  "promoted_from": "v0.4.0-rc.2-crt-r12",
+  "firmware_and_four_cores_byte_identical": true,
+  "hardware_report": {
+    "reported_by": "maintainer/user",
+    "report": "That seems to be working now",
+    "date": "2026-11-03",
+    "scope": "r12 working confirmation following r11 NES loading failure",
+    "accuracycoin_full_suite": "Not claimed; manual validation retained"
+  },
+  "full_accuracycoin_test": "Manual/pending; not run for stable promotion",
+  "hardware_flashed_by_agent": false,
+  "payloads": [
+    {
+      "file": "nanoblast-firmware.bin",
+      "bytes": 463872,
+      "sha256": "71278fb69c84592d721a8c51709d23c5a531e22e52067bc26a7eb84775ea6fb2"
+    },
+    {
+      "file": "cores/nes.core",
+      "bytes": 338496,
+      "sha256": "0197571284b6e9370ed57cfbaf03675904a6abb370ac60ea376021a05ba387b3"
+    },
+    {
+      "file": "cores/sms-gamegear.core",
+      "bytes": 331076,
+      "sha256": "96d7aaee26e8aea85e05934ea925e6b4f693e3d13af8f9b92738af122460396a"
+    },
+    {
+      "file": "cores/gb-colour.core",
+      "bytes": 351356,
+      "sha256": "cda9a8dcbae099819672edd60cdaf1e46305df856738a078e22bc589d0dd1b88"
+    },
+    {
+      "file": "cores/snes-experimental.core",
+      "bytes": 441232,
+      "sha256": "cc9e7c867e5baff687b556a12338847fadbae64e07333985ee3556b5613e3ee5"
+    }
+  ]
+}

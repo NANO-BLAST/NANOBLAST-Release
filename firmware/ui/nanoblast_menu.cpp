@@ -5,7 +5,7 @@
 #include <cstdio>
 namespace nanoblast {
 namespace {
-constexpr unsigned cores[]={1,5,7,2};
+constexpr unsigned cores[]={1,5,7,2,16};
 unsigned region_index(unsigned core){return core==2?2:core==5?1:0;}
 void centered(Platform&p,unsigned row,const char*s){
  unsigned n=static_cast<unsigned>(std::strlen(s));
@@ -20,31 +20,32 @@ void draw_usb_transfer_screen(Platform &p){
  fixed_menu_panel(p);p.selection(false,0,0,0,0);
  centered(p,15,"USB ROM TRANSFER");centered(p,20,"READY TO CONNECT");p.present();
 }
-Menu::Menu(Platform&p,unsigned core):p_(p),core_(core){p_.verify_core(false);}
+Menu::Menu(Platform&p,unsigned core):p_(p),core_(core){p_.verify_core(false);p_.shortcut(true);}
 unsigned Menu::count()const{
  if(page_==Page::Home)return running_?4:3;
  if(page_==Page::Settings)return 5;
  if(page_==Page::Clock)return 6;
  if(page_==Page::Advanced)return 5;
- return experimental_?4:3;
+ return experimental_?5:3;
 }
 void Menu::show(){visible_=true;page_=Page::Home;choice_=0;message_="";p_.overlay(true);redraw();}
 void Menu::redraw(){
  p_.menu_theme(true);p_.debug(debug_);p_.clear();p_.large_text(false);if(debug_)p_.status();
  fixed_menu_panel(p_);
  const bool spaced=page_==Page::Home||page_==Page::Cores;
- const unsigned first=page_==Page::Home?(count()==3?19:18):spaced&&count()==3?18:horizon::FirstChoice;
+ const unsigned first=page_==Page::Home?(count()==3?19:18):spaced&&count()==3?18:spaced&&count()==5?16:horizon::FirstChoice;
  p_.half_cell_row(-1);
  centered(p_,15,page_==Page::Home?"MAIN MENU":page_==Page::Cores?"CHOOSE CORE":page_==Page::Settings?"SETTINGS":page_==Page::Clock?"SET CLOCK":"ADVANCED");
  if(page_==Page::Home){
   centered(p_,first,"PLAY GAMES");centered(p_,first+2,"CHOOSE CORE");centered(p_,first+4,"SETTINGS");
   if(running_)centered(p_,first+6,"RESUME GAME");
  }else if(page_==Page::Cores){
-  const char *names[]={"NES / FAMICOM","MASTER SYSTEM / GAME GEAR","GAME BOY / COLOUR","SNES (EXPERIMENTAL)"};
+  const char *names[]={"NES / FAMICOM","MASTER SYSTEM / GAME GEAR","GAME BOY / COLOUR","SNES (EXPERIMENTAL)","SEGA SYSTEM 16 (EXPERIMENTAL)"};
   for(unsigned i=0;i<count();i++)centered(p_,first+2*i,names[i]);
  }else if(page_==Page::Settings){
-  centered(p_,first,select_start_?"Menu: SELECT + START":"Menu: SELECT + RIGHT");
-  centered(p_,first+1,core_==0?"Region: choose a core":core_==7?"Region: fixed (Game Boy)":pal_[region_index(core_)]?"Region: PAL":"Region: NTSC");
+  centered(p_,first,core_==0?"Region: choose a core":core_==16?"Region: fixed (arcade)":core_==7?"Region: fixed (Game Boy)":pal_[region_index(core_)]?"Region: PAL":"Region: NTSC");
+  const char *crt_names[]={"CRT: Off","CRT: Light Scanlines","CRT: Strong Scanlines","CRT: CRT"};
+  centered(p_,first+1,(core_==1||core_==5||core_==16)?crt_names[crt_]:"CRT: NES / SMS only");
   centered(p_,first+2,"Core boot flash");centered(p_,first+3,"Clock");centered(p_,first+4,"Advanced");
  }else if(page_==Page::Clock){
   char line[32];const char *names[]={"Year","Month","Day","Hour","Minute"};
@@ -80,8 +81,7 @@ void Menu::select(){
   else if(choice_==2){page_=Page::Settings;choice_=0;}
   else if(running_){visible_=false;p_.overlay(false);return;}
  }else if(page_==Page::Settings){
-  if(choice_==0){select_start_=!select_start_;p_.shortcut(select_start_);}
-  else if(choice_==1&&(core_==1||core_==5||core_==2)){
+  if(choice_==0&&(core_==1||core_==5||core_==2)){
    bool&pal=pal_[region_index(core_)];pal=!pal;p_.region(core_,pal);message_="Applies to next game load";
   }else if(choice_==2){
    if(!core_)message_="Choose a core first";
@@ -91,6 +91,7 @@ void Menu::select(){
    }
   }else if(choice_==3){page_=Page::Clock;choice_=0;clock_draft_=p_.clock_get();clock_draft_.second=0;}
   else if(choice_==4){page_=Page::Advanced;choice_=0;}
+  else if(choice_==1&&(core_==1||core_==5||core_==16)){crt_=(crt_+1)&3;p_.crt(crt_);}
  }else if(page_==Page::Clock){
   if(choice_<5)clock_editing_=!clock_editing_;
   else message_=p_.clock_set(clock_draft_)?"Clock saved":"Clock save failed";
@@ -107,7 +108,7 @@ void Menu::select(){
   else{
    p_.text(1,25,"                               ");centered(p_,25,"Loading core...");p_.present();
    switch(p_.switch_core(selected)){
-   case SwitchResult::Loaded:p_.region(selected,pal_[region_index(selected)]);core_=selected;running_=false;page_=Page::Home;choice_=0;break;
+   case SwitchResult::Loaded:p_.crt(crt_);p_.region(selected,pal_[region_index(selected)]);core_=selected;running_=false;page_=Page::Home;choice_=0;break;
    case SwitchResult::Unavailable:message_="Core image not installed";break;
    case SwitchResult::Failed:core_=p_.detected_core();running_=false;message_=p_.switch_error();break;
    }
@@ -145,7 +146,7 @@ void Menu::input(uint16_t joy1,uint16_t joy2,uint16_t hid1,uint16_t hid2){
  const uint16_t buttons=joy1|joy2|hid1|hid2;
  uint16_t pressed=buttons&~previous_;previous_=buttons;
  if(transfer){if(transfer_pressed)request_usb_transfer();return;}
- const uint16_t shortcut=select_start_?0x0c:0x84;
+ constexpr uint16_t shortcut=0x0c;
  if(buttons==shortcut){if(pressed&&!visible_)show();return;}
  if(!visible_)return;
  if(page_==Page::Clock&&clock_editing_){

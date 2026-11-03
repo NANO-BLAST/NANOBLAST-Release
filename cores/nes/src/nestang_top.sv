@@ -89,6 +89,7 @@ module nestang_top (
 // Core settings
 wire arm_reset = 0;
 wire nes_pal;
+wire [1:0] crt_mode;
 wire [1:0] system_type = {1'b0,nes_pal};
 wire pal_video = 0;
 wire [1:0] scanlines = 2'b0;
@@ -380,10 +381,15 @@ assign ext_audio = (mapper_flags[7:0] == 19) | (mapper_flags[7:0] == 24) | (mapp
 always @(posedge clk) begin
     clkref <= ~clkref;
     if (~loading && loading_r) begin
-        reset_nes <= 0;
         clkref <= 1;
-    end else if (loading && ~loading_r)
+    end
+    // Loading completion is not execution permission: the menu still owns
+    // SDRAM until its outstanding artwork line has drained. Release reset
+    // only after that handoff, at one deterministic reference-clock phase.
+    if (loading)
         reset_nes <= 1;
+    else if (loader_done && !loader_fail && !menu_paused && clkref)
+        reset_nes <= 0;
     if (~sys_resetn)
     begin
         reset_nes <= 1;
@@ -429,10 +435,11 @@ menu_background background (
 nes2hdmi u_hdmi (     // purple: RGB=440064 (010001000_00000000_01100100), BGR5=01100_00000_01000
     .clk(clk), .resetn(sys_resetn), .pixel_resetn(pixel_resetn),.serializer_resetn(serializer_resetn),
     .color(color), .cycle(cycle), 
-    .scanline(scanline), .sample(menu_paused ? 16'd0 : sample >> 1),
+    .scanline(scanline), .sample((overlay || menu_paused || reset_nes || loading) ? 16'd0 : sample >> 1),
     .overlay(overlay), .overlay_x(overlay_x), .overlay_y(overlay_y),
     .overlay_color(overlay_color),
-    .background_rgb(background_rgb), .background_valid(background_valid),
+    .crt_mode(crt_mode),
+    .background_rgb(background_rgb),.background_valid(background_valid),
     .clk_pixel(hclk), .clk_5x_pixel(hclk5),
     .tmds_clk_n(tmds_clk_n), .tmds_clk_p(tmds_clk_p),
     .tmds_d_n(tmds_d_n), .tmds_d_p(tmds_d_p)
@@ -537,11 +544,11 @@ wire [11:0] mcu_joy1,mcu_joy2;
 assign joy1_btns=mcu_joy1;assign joy2_btns=mcu_joy2;
 nanoblast_iosys #(.CORE_ID(1)) iosys(
     .flash_clk(flash_spi_clk),.flash_mosi(flash_spi_mosi),.flash_cs_n(flash_spi_cs_n),.flash_miso(flash_spi_miso),
-    .core_status(8'h01),
+    .core_status({1'b1,1'b0,loading,reset_nes,menu_paused,~reset_nes,loader_fail,(loader_done && !loader_fail && !loading)}),
     .clk(clk),.hclk(hclk),.resetn(sys_resetn),.uart_rx(UART_RXD),.uart_tx(UART_TXD),
     .joy1(joy1_btns),.joy2(joy2_btns),.usb_joy1(mcu_joy1),.usb_joy2(mcu_joy2),
     .overlay_x(overlay_x),.overlay_y(overlay_y),.overlay_color(overlay_color),.overlay(overlay),
-    .rom_loading(loading),.rom_do(loader_do),.rom_do_valid(loader_do_valid),.nes_pal(nes_pal),
+    .rom_loading(loading),.rom_do(loader_do),.rom_do_valid(loader_do_valid),.nes_pal(nes_pal),.crt_mode(crt_mode),
     .sd_clk(sd_clk),.sd_mosi(sd_cmd),.sd_cs_n(sd_dat3),.sd_miso(sd_dat0),
     .background_enable(background_enable),.background_oled(background_oled),.background_palette_we(background_palette_we),.background_palette_data(background_palette_data),
     .rv_valid(rv_valid),.rv_ready(rv_ready),.rv_addr(rv_addr),.rv_wdata(rv_wdata),.rv_wstrb(rv_wstrb));

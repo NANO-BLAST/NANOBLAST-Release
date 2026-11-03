@@ -17,12 +17,18 @@ p.add_argument('--yosys', default='yosys')
 p.add_argument('--nextpnr', default='nextpnr-himbaechel')
 p.add_argument('--pack-python', help='Python with the matching apycula package; also packs the FS image')
 p.add_argument('--seed', type=int, default=2)
+p.add_argument('--max-lut', type=int, choices=[4, 6], default=6,
+               help='ABC mapping width; use 4 with fresh placement for CRT builds')
 p.add_argument('--placement-timeout', type=int, default=1000,
-               help='Bound legalization search attempts; does not relax timing')
+               help='Search divisor N: max(10000, cells squared / N) attempts per cell')
+p.add_argument('--placement-density', type=float, default=0.9,
+               help='Analytical target density (0 < beta <= 1); physical limits still apply')
 p.add_argument('--synth-only', action='store_true')
 p.add_argument('--no-reference-placement', action='store_true',
                help='Allow all storage placement to change instead of retaining release locations')
 a = p.parse_args()
+if not 0 < a.placement_density <= 1:
+    p.error('--placement-density must be greater than 0 and at most 1')
 a.out = a.out.resolve()
 a.out.mkdir(parents=True, exist_ok=True)
 archive = ROOT / 'build-inputs/setup-workspace/hardware-tests/solid-loading/nes'
@@ -42,7 +48,10 @@ for source in sources.splitlines():
     if not Path(source).is_file():
         raise SystemExit('Missing build input: ' + source)
 (a.out / 'sources.f').write_text(sources)
-(a.out / 'synthesis.ys').write_text(relocate((archive / 'synthesis.ys').read_text()))
+synthesis = relocate((archive / 'synthesis.ys').read_text())
+assert synthesis.count('abc9 -maxlut 6') == 1
+synthesis = synthesis.replace('abc9 -maxlut 6', 'abc9 -maxlut ' + str(a.max_lut))
+(a.out / 'synthesis.ys').write_text(synthesis)
 extra_inputs = [ROOT / 'cores/nes/src/nano20k/gowin_pll_hdmi.v',
                 ROOT / 'cores/nes/src/nano20k/gowin_pll_nes.v',
                 ROOT / 'cores/nes/src/iosys/gowin_dpb_menu.v',
@@ -53,7 +62,8 @@ extra_inputs = [ROOT / 'cores/nes/src/nano20k/gowin_pll_hdmi.v',
                 ROOT / 'cores/nes/constraints/release-storage-placement.json',
                 ROOT / 'cores/sms-gamegear/vendor-hdmi-io-fuses.json',
                 ROOT / 'build-inputs/original-workspace/work/pack-nanoblast.py']
-manifest = {'reference_placement': not a.no_reference_placement, 'seed': a.seed, 'placement_timeout': a.placement_timeout, 'source_sha256': {
+manifest = {'reference_placement': not a.no_reference_placement,
+            'max_lut': a.max_lut, 'placement_density': a.placement_density, 'seed': a.seed, 'placement_timeout': a.placement_timeout, 'source_sha256': {
     source: hashlib.sha256(Path(source).read_bytes()).hexdigest()
     for source in sources.splitlines()},
     'build_support_sha256': {str(source): hashlib.sha256(source.read_bytes()).hexdigest()
@@ -88,7 +98,8 @@ run([a.nextpnr, '--json', str(route_input), '--write', str(a.out / 'nes-routed.j
      '--vopt', 'cst=' + str(ROOT / 'tools/legacy/nanoblast-native.cst'),
      '--pre-pack', str(ROOT / 'cores/nes/constraints/nanoblast-clocks.py'),
      '--freq', '27', '--seed', str(a.seed),
-     '--placer-heap-cell-placement-timeout', str(a.placement_timeout), '--report', str(a.out / 'timing.json'),
+     '--placer-heap-cell-placement-timeout', str(a.placement_timeout),
+     '--placer-heap-beta', str(a.placement_density), '--report', str(a.out / 'timing.json'),
      '--sdf', str(a.out / 'nes.sdf')], 'route')
 # Check actual clock targets and all storage pads before producing an image.
 fmax = json.loads((a.out / 'timing.json').read_text())['fmax']

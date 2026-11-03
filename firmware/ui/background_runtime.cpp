@@ -32,6 +32,14 @@ struct Memory: nanoblast::AssetSource {
 };
 struct Transport:nanoblast::BackgroundTransport {
  void enable(bool v)override{taskENTER_CRITICAL();fpga_tx_header(17,2);fpga_tx_byte(v);taskEXIT_CRITICAL();}
+ void pause_scanout()override{
+  enable(false);
+#ifndef NANOBLAST_SD_SETUP_HOST_TEST
+  // Let the outstanding 1280-byte line DMA finish and precharge bank 3.
+  // Two RTOS ticks also covers rates where a 2 ms conversion truncates.
+  vTaskDelay(pdMS_TO_TICKS(2)+2);
+#endif
+ }
  void palette(uint32_t v)override{taskENTER_CRITICAL();fpga_tx_header(18,5);for(int s=24;s>=0;s-=8)fpga_tx_byte(v>>s);taskEXIT_CRITICAL();}
  bool pixels(uint32_t a,const uint8_t*d,unsigned n)override{
   while(xSemaphoreTake(ack,0)==pdTRUE){}

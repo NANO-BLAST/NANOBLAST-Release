@@ -9,7 +9,7 @@ namespace {
 uint16_t u16(const uint8_t*p){return uint16_t(p[0])|uint16_t(p[1])<<8;}
 uint32_t u32(const uint8_t*p){return uint32_t(u16(p))|uint32_t(u16(p+2))<<16;}
 bool suffix(const char*s,const char*ext){auto n=std::strlen(s),m=std::strlen(ext);if(n<m)return false;for(unsigned i=0;i<m;++i)if(std::tolower(static_cast<unsigned char>(s[n-m+i]))!=ext[i])return false;return true;}
-bool matching(const char*s,unsigned core){return core==1?suffix(s,".nes"):core==5?(suffix(s,".sms")||suffix(s,".gg")):core==7?(suffix(s,".gb")||suffix(s,".gbc")):core==2?(suffix(s,".sfc")||suffix(s,".smc")):false;}
+bool matching(const char*s,unsigned core){return core==16?suffix(s,".rom"):core==1?suffix(s,".nes"):core==5?(suffix(s,".sms")||suffix(s,".gg")):core==7?(suffix(s,".gb")||suffix(s,".gbc")):core==2?(suffix(s,".sfc")||suffix(s,".smc")):false;}
 bool safe_name(const char*s){
  if(!*s||*s=='/'||*s=='\\')return false;
  const char*part=s;

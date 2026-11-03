@@ -4,6 +4,7 @@
 `timescale 1ns / 1ps
 
 module nes2hdmi (
+ input wire [1:0] crt_mode,
 	input clk,      // nes clock
 	input resetn,
     input pixel_resetn,
@@ -248,6 +249,42 @@ wire [15:0] bmix = r_rgbv[7:0]*mixratio[15:8] + rgbv[7:0]*mixratio[7:0];
 reg [23:0] rgb;     // actual RGB output
 reg overlay_active;
 
+
+// CRT presets: 0 bypass, 1 light scanlines, 2 strong scanlines, 3 mask + light.
+// Shift/subtract arithmetic: no framebuffer, DSP, or extra video pipeline stage.
+function automatic [23:0] crt_filter(input [23:0] c, input [1:0] mode,
+                                  input dark_line, input [1:0] stripe);
+ reg [7:0] rr,gg,bb;
+ begin
+  rr=c[23:16];gg=c[15:8];bb=c[7:0];
+  if(mode!=0 && dark_line)begin
+   if(mode==2)begin rr=rr>>1;gg=gg>>1;bb=bb>>1;end
+   else begin rr=rr-(rr>>2);gg=gg-(gg>>2);bb=bb-(bb>>2);end
+  end
+  if(mode==3)begin
+   if(stripe!=0)rr=rr-(rr>>3);
+   if(stripe!=1)gg=gg-(gg>>3);
+   if(stripe!=2)bb=bb-(bb>>3);
+  end
+  crt_filter={rr,gg,bb};
+ end
+endfunction
+wire [1:0] crt_pending;
+reg [1:0] crt_active;
+cdc_mailbox #(.WIDTH(2)) crt_cdc(.src_clk(clk),.src_resetn(resetn),.src_data(crt_mode),
+ .dst_clk(clk_pixel),.dst_resetn(pixel_resetn),.dst_data(crt_pending));
+// Apply complete settings only at a frame boundary.
+always @(posedge clk_pixel)begin
+ if(!pixel_resetn)crt_active<=0;
+ else if(cx==0 && cy==0)crt_active<=crt_pending;
+end
+// Three output columns per repeating RGB mask, implemented with a tiny counter.
+reg [1:0] crt_stripe;
+always @(posedge clk_pixel)begin
+ if(!pixel_resetn || cx==0)crt_stripe<=0;
+ else crt_stripe<=crt_stripe==2?0:crt_stripe+1'b1;
+end
+
 // calc rgb value to hdmi
 always_ff @(posedge clk_pixel) begin
     reg [23:0] rgb_nes;
@@ -315,7 +352,7 @@ always_ff @(posedge clk_pixel) begin
         if (overlay_active && overlay_color[15])  // overlay_color is BGR5
             rgb <= {overlay_color[4:0], 3'b0, overlay_color[9:5], 3'b0, overlay_color[14:10], 3'b0};
     end else
-        rgb <= rgb_nes;     // normal NES display
+        rgb <= crt_filter(rgb_nes,crt_active,cy%3==2,crt_stripe);
 
     if (cx == 0) begin
         x <= 0;

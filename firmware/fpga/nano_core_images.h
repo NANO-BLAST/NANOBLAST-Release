@@ -9,6 +9,10 @@ constexpr uint32_t NanoPreviousSMSSampleCRC[3]={0xa2b835db,0xe0b3750f,0x39685d4c
 // Exact prior NANOBLAST images accepted across menu asset upgrades.
 struct NanoPriorBootImage {unsigned core;uint32_t crc;uint32_t sample[3];};
 constexpr NanoPriorBootImage NanoPriorBootImages[]={
+ {1,0x88bd6cbf,{0xa2b835db,0x55e465f5,0x385282ad}}, // CRT r10/r11 NES
+ {1,0x28b7aca1,{0xa2b835db,0x5692fcec,0xdf02c2c3}}, // CRT r9 NES
+ {1,0xf2c160e0,{0xa2b835db,0xce8dd151,0xd6b84b31}}, // pre-CRT nes 9f2ee6bd0b989baed39a87cd1a7e832ebb0a44cc48124f507e8aa5d0c3113fdf
+ {5,0xe374a6da,{0xa2b835db,0xc4de65be,0xf1760ca1}}, // pre-CRT sms-gamegear 9b3c4a710380e6d58b5a457fb9fa942f65967563d936fff3fd2000bad296f7d0
  {1,0xf5c917c4,{0xa2b835db,0x867ee14c,0x33446798}}, // rc.2 97fd6c5072d22f5f5564e62c97bd15bd16c3099d80a6568da0f719fa5d7f6026
  {1,0x9d0b1f82,{0xa2b835db,0xb08a1758,0xac4b0359}}, // nes147 r1 3fe47a8668655d21ed162c837659223d033aa937a65656f9342044275798640d
  {1,0xf2bd5ea2,{0xa2b835db,0x7126d08b,0xb5613d0c}}, // nes147 r2 5e2bcdcebacf4e6ea328bf6eb3a25dc6e44af3bc72ceb617a9599b8a7a6d0612

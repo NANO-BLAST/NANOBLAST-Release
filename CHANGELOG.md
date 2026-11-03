@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.1 — 3 November 2026
+
+- Stable promotion of the maintainer-confirmed working CRT r12 build; firmware and all four FPGA core payloads remain identical to r12.
+- NES loader-ready, SDRAM/menu drain and reset-release handshake with deterministic divider/reference phase; explicit load/handoff errors.
+- NES/SMS CRT presets, SNES-style button helpers and Select + Start menu access.
+- Centred loading label/progress without a separate black box; remove the post-artwork 500 ms delay.
+- Preserve NES menu/reset/loading audio mute, boot flash/backups and experimental source work.
+- Hardware working confirmation is scoped to the user's r12 report. Full AccuracyCoin validation remains manual and is not claimed as 147/147 for this release.
+
+
 ## v0.4.0 — main release
 
 - Promote the byte-identical rc.2 NES147-r3 firmware and core payloads.

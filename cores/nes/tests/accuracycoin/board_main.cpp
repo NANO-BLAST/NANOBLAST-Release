@@ -25,6 +25,9 @@ int main(int argc, char **argv) {
     std::vector<uint8_t> memory(1 << 22, 0);
     for (unsigned i = 0; i < 32768; ++i) memory[i] = rom[16 + i];
     for (unsigned i = 0; i < 8192; ++i) memory[0x200000 + i] = rom[32784 + i];
+    const bool switching = std::getenv("REGION_RELOAD_TEST");
+    unsigned switches=0, reset_ce=0, stage_samples[5]={}; uint64_t reload_start=0; bool reloading=false;
+    top.loader_active=top.loader_write=0;top.loader_addr=top.loader_data=0;
     top.menu_pause = 0;
     top.sys_type = 0;
     top.mapper_flags = 0x100;
@@ -57,8 +60,41 @@ int main(int argc, char **argv) {
          tick < uint64_t(max_frames + 1) * 400000; ++tick) {
         top.clk = 0;
         top.reset_nes = top.cold_reset = tick < 100;
+        if(switching) {
+            if(!reloading && switches<4 && frame>=int((switches+1)*75)) {
+                if(stage_samples[switches]<100 || !top.dbg_ppu_enabled) {std::fprintf(stderr,"FAIL no rendered ROM before reload %u: samples=%u enabled=%u\n",switches,stage_samples[switches],top.dbg_ppu_enabled);return 1;}
+                reloading=true;reload_start=tick;reset_ce=0;
+            }
+            top.menu_pause=reloading;
+            if(reloading) {
+                const uint64_t age=tick-reload_start;
+                const unsigned transfer_duration=40960*12;
+                const unsigned tail=std::getenv("RELOAD_TAIL")?std::atoi(std::getenv("RELOAD_TAIL")):0;
+                const unsigned duration=transfer_duration+tail;
+                top.reset_nes=age>=64 && age<64+duration;
+                top.loader_active=top.reset_nes;
+                if(age==64) top.sys_type=(switches&1)?0:1;
+                top.loader_write=top.reset_nes && age<64+transfer_duration;
+                if(top.loader_active) {
+                    unsigned i=std::min<unsigned>((age-64)/12,40959);
+                    top.loader_addr=i<32768?i:0x200000+i-32768;
+                    top.loader_data=rom[16+i];
+                    reset_ce+=top.dbg_ppu_ce;
+                }
+                if(age==64+duration) {
+                    if(top.dbg_ppu_enabled || reset_ce<100 || top.dbg_div_cpu>12 || top.dbg_div_ppu>4) {
+                        std::fprintf(stderr,"FAIL paused reload %u: enabled=%u reset_ce=%u CPUdiv=%u PPUdiv=%u\n",switches,top.dbg_ppu_enabled,reset_ce,top.dbg_div_cpu,top.dbg_div_ppu);return 1;
+                    }
+                }
+                if(age>=128+duration) {
+                    reloading=false;++switches;top.menu_pause=0;
+                    std::printf("RELOAD %u region=%u reset_ce=%u\n",switches,top.sys_type,reset_ce);
+                }
+            }
+        }
         top.eval();
-        unsigned buttons = frame >= 120 && frame < 130 ? 8 : 0; // Start
+        const int test_start=switching?420:120;
+        unsigned buttons = frame >= test_start && frame < test_start+10 ? 8 : 0; // Start
         if (page) {
             int at = frame - 120;
             buttons = at >= 0 && at < (page - 1) * 4 && at % 4 < 2 ? 128 : 0;
@@ -76,7 +112,7 @@ int main(int argc, char **argv) {
             time=tick*48+sub;
             if(time==release_at)top.ram_drive=0;
             if(time==read_at){top.ram_din=read_data;top.ram_drive=1;}
-            if(sub==24 && frame<100 && top.dbg_ppu_sample){++samples;if(top.dbg_ppu_din!=memory[top.ppumem_addr]){if(mismatches<10)std::printf("PPU MISMATCH frame=%d line=%u cycle=%u address=%06x expected=%02x got=%02x\n",frame,top.scanline,top.cycle,top.ppumem_addr,memory[top.ppumem_addr],top.dbg_ppu_din);++mismatches;}}
+            if(sub==24 && frame<(switching?420:100) && !reloading && top.dbg_ppu_sample){++samples;++stage_samples[switches];if(top.dbg_ppu_din!=memory[top.ppumem_addr]){if(mismatches<10)std::printf("PPU MISMATCH frame=%d line=%u cycle=%u address=%06x expected=%02x got=%02x\n",frame,top.scanline,top.cycle,top.ppumem_addr,memory[top.ppumem_addr],top.dbg_ppu_din);++mismatches;}}
             top.clk=sub>=24;top.fclk=(time%16)<8;top.eval();
             if(time%16==10){
                 unsigned cmd=top.ram_cmd,bank=top.ram_bank;
@@ -116,6 +152,8 @@ int main(int argc, char **argv) {
         }
         previous_frame = at_frame;
     }
+    if(switching && (switches!=4 || frame<390 || stage_samples[4]<100 || mismatches)) {std::fprintf(stderr,"FAIL switches=%u frame=%d stale=%u\n",switches,frame,mismatches);return 1;}
+    if(switching) std::puts("PASS four paused NTSC/PAL reloads, reset enables and production shared-SDRAM rendering; no power reset");
     std::printf("Initial rendering samples=%u stale_bytes=%u\n",samples,mismatches);
     std::ofstream report("rendering.json");report<<"{\"samples\":"<<samples<<",\"stale_bytes\":"<<mismatches<<"}\n";
     std::ofstream image("pixels.bin",std::ios::binary);image.write(reinterpret_cast<char *>(pixels.data()),pixels.size());

@@ -68,7 +68,7 @@ void seed(){
  for(unsigned i=0;i<4;i++){auto image=load((packed_root+"/"+names[i]+".core").c_str());std::copy(image.begin(),image.end(),bl.begin()+nanoblast::CoreSlots[i].base);}
  nanoblast::compressed_core_reset();nano_boot_diag_valid=false;
 }
-int main(int argc,char**argv){assert(argc==3);packed_root=argv[1];raw_root=argv[2];
+int main(int argc,char**argv){assert(argc>=3);packed_root=argv[1];raw_root=argv[2];
  for(unsigned i=0;i<4;i++)raw[i]=load((raw_root+"/"+names[i]+"-nano20k.bin").c_str());
  for(unsigned i=0;i<4;i++)for(bool verify:{true,false}){
   seed();auto before=bl;assert(fpga_persist_asset(nanoblast::CoreSlots[i].id,verify)&&reloads==1&&bl==before&&!memcmp(flash.data(),raw[i].data(),raw[i].size()));
@@ -80,5 +80,15 @@ int main(int argc,char**argv){assert(argc==3);packed_root=argv[1];raw_root=argv[
  seed();bl[nanoblast::CoreSlots[2].base+4100]^=1;assert(!fpga_persist_asset(7,true)&&!erases&&!reloads);
  seed();corrupt_read=true;assert(!fpga_persist_asset(5,true)&&!erases&&!reloads);
  seed();ignore_page=true;assert(!fpga_persist_asset(7,true)&&!reloads&&erases==14);
+ // Exact old images remain readable after replacing the auxiliary core bank.
+ for(int i=3;i<argc;i++){
+  seed();auto old=load(argv[i]);assert(old.size()==907418);
+  memcpy(flash.data(),old.data(),old.size());NanoDirectIO io(0);
+  assert(nano_boot_readable(io)&&!erases&&!pages);
+  const char *diagnostic=fpga_boot_flash_diagnostic();
+  assert(!strstr(diagnostic,"unknown")&&!strstr(diagnostic,"failed"));
+  assert(fpga_persist_asset(1,true)&&reloads==1&&!memcmp(flash.data(),raw[0].data(),raw[0].size()));
+ }
+ seed();flash[0]^=0x80;assert(!fpga_persist_asset(1,true)&&!erases&&!reloads);
  puts("PASS actual boot-flash persistence for all four compressed sources, verification on/off, immutable BL flash, protection/ID guards and failed-save handling");
 }

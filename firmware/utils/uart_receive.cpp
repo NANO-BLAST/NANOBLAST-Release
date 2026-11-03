@@ -1,4 +1,8 @@
+#ifdef NANOBLAST_UART_RECEIVE_HOST_TEST
+#include "../tests/uart_receive_platform.h"
+#else
 #include "utils.h"
+#endif
 #include "init.h"
 #include "uart_rx_buffer.h"
 namespace {
@@ -6,6 +10,9 @@ UartRxBuffer received;
 SemaphoreHandle_t wake;
 void receive_interrupt(int,void*) {
     auto status=bflb_uart_get_intstatus(uart1_dev);
+    // An overrun may happen while the FPGA is already sending boot traffic.
+    // Clear the hardware FIFO so a partial startup frame cannot wedge RX.
+    if(status&UART_INTSTS_RX_FER)bflb_uart_feature_control(uart1_dev,UART_CMD_CLR_RX_FIFO,0);
     if(status&UART_INTSTS_RTO)bflb_uart_int_clear(uart1_dev,UART_INTCLR_RTO);
     while(bflb_uart_rxavailable(uart1_dev))received.push(bflb_uart_getchar(uart1_dev));
     BaseType_t task_woken=pdFALSE;
@@ -17,6 +24,9 @@ void start_uart_receive(){
     // Called by the receive task after the scheduler starts, before enabling IRQs.
     wake=xSemaphoreCreateBinary();
     configASSERT(wake);
+    bflb_uart_rxint_mask(uart1_dev,true);
+    bflb_uart_feature_control(uart1_dev,UART_CMD_CLR_RX_FIFO,0);
+    bflb_uart_int_clear(uart1_dev,UART_INTCLR_RTO);
     bflb_irq_attach(uart1_dev->irq_num,receive_interrupt,nullptr);
     bflb_uart_rxint_mask(uart1_dev,false);
     bflb_irq_enable(uart1_dev->irq_num);

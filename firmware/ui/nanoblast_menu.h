@@ -26,6 +26,7 @@ struct Platform {
     virtual bool usb_transfer() {return false;}
     virtual void debug(bool) {}
     virtual void oled(bool) {}
+    virtual void crt(unsigned) {}
     virtual void present() {}
     virtual void large_text(bool) {}
     virtual void half_cell_row(int) {}
@@ -55,12 +56,13 @@ private:
     unsigned choice_ = 0, core_;
     uint16_t previous_ = 0;
     bool usb_shortcut_held_ = false;
-    bool running_ = false, visible_ = true, select_start_ = false;
+    bool running_ = false, visible_ = true;
     bool debug_ = false;
     bool pal_[3] = {false,false,false};
     bool verify_core_ = false;
     bool experimental_ = false;
     bool oled_ = false;
+    unsigned crt_ = 0;
     bool clock_editing_=false;
     ClockDate clock_draft_{};
     void adjust_clock(int direction);

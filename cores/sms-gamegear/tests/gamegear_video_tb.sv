@@ -3,7 +3,7 @@ module gamegear_video_tb;
 reg clk=0,pclk=0;always #10 clk=~clk;always #7 pclk=~pclk;
 reg resetn=0,ce=0,gear=1;reg[7:0]top=24;reg[8:0]x=0,y=0;
 reg[11:0]color=0;wire[10:0]ox;wire[9:0]oy;
-sms_nano_hdmi dut(.clk(clk),.resetn(resetn),.pixel_resetn(resetn),.clk_pixel(pclk),.clk_5x_pixel(pclk),
+sms_nano_hdmi dut(.crt_mode(2'd0),.clk(clk),.resetn(resetn),.pixel_resetn(resetn),.clk_pixel(pclk),.clk_5x_pixel(pclk),
  .game_gear(gear),.gamegear_top(top),.ce_pix(ce),.x(x),.y(y),.color(color),.height(9'd144),.audio_l(16'd0),.audio_r(16'd0),
  .overlay(1'b0),.overlay_x(ox),.overlay_y(oy),.overlay_color(16'd0),.background_rgb(24'd0),.background_valid(1'b0),
  .tmds_clk_n(),.tmds_clk_p(),.tmds_d_n(),.tmds_d_p());

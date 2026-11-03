@@ -68,4 +68,11 @@ int main(){
  // The ordinary Advanced action still enters transfer mode when idle.
  Fake idle;Menu advanced(idle);page(advanced,Page::Advanced);down(advanced,4);press(advanced,0x100);
  assert(idle.transfers==1);
+ // Menu access is fixed at Select+Start; Select+Right no longer opens it.
+ Fake fixed;Menu fixed_menu(fixed);page(fixed_menu,Page::Settings);
+ assert(fixed.has("Region: NTSC")&&fixed.has("CRT: Off"));
+ assert(!fixed.has("Menu: SELECT + START")&&!fixed.has("Menu: SELECT + RIGHT"));
+ Fake pad;pad.game=true;Menu running(pad);press(running,0x100);
+ assert(!running.visible());press(running,0x84);assert(!running.visible());
+ press(running,0x0c);assert(running.visible());
 }

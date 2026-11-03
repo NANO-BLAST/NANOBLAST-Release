@@ -29,6 +29,7 @@ extern const char *snes_cpu_diagnostic();
 extern const char *snes_apu_diagnostic();
 extern int loadgba(const char *fname);
 extern int loadmd(const char *fname);
+extern int loads16(const char *fname);
 extern int loadsms(const char *fname);
 extern int loadpc(const char *fname);
 

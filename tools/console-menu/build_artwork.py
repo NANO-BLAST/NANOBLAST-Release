@@ -33,7 +33,7 @@ helper_visible=im
 helper_arrays=[]
 for index,left in enumerate((448,688)):
  for name,source in [('plain',base),('visible',helper_visible)]:
-  data=source.crop((left,670,left+33,703)).tobytes()
+  data=source.crop((left,670,left+36,703)).tobytes()
   helper_arrays.append((f'helper_{index}_{name}',data))
 im=base
 rawpixels=im.tobytes()
@@ -72,9 +72,13 @@ while pos<len(raw):
 (a.output/'horizon.nblz').write_bytes(out)
 def array(name,data):return 'static const uint8_t '+name+'[]={\n'+'\n'.join(','.join(f'0x{x:02x}' for x in data[i:i+24])+',' for i in range(0,len(data),24))+'\n};\n'
 (ROOT/'firmware/ui/background_helpers.inc').write_text('// Generated helper tiles; restore the exact artwork when hidden.\n'+''.join(array(name,data) for name,data in helper_arrays))
-(a.output/'helpers.json').write_text(json.dumps([dict(x=left,y=670,width=33,height=33,visible=list(helper_visible.crop((left,670,left+33,703)).tobytes())) for left in (448,688)]))
+(a.output/'helpers.json').write_text(json.dumps([dict(x=left,y=670,width=36,height=33,visible=list(helper_visible.crop((left,670,left+36,703)).tobytes())) for left in (448,688)]))
 (ROOT/'firmware/ui/background_seed.inc').write_text('// Horizon artwork compiled by tools/console-menu/build_artwork.py; SHA256 '+hashlib.sha256(out).hexdigest()+'\n'+array('background_seed_header',header)+array('background_seed',out))
 font=[int(x,16) for x in re.findall(r"8'h([0-9a-fA-F]{2})",(ROOT/'tools/console-menu/font.vh').read_text())];assert len(font)==1024
 (a.output/'font.json').write_text(json.dumps(font))
 (a.output/'artwork.json').write_text(json.dumps(dict(source_sha256=hashlib.sha256(a.image.read_bytes()).hexdigest(),compressed_bytes=len(out),compressed_sha256=hashlib.sha256(out).hexdigest(),row_palette=[224,234],size=[1280,720]),indent=2)+'\n')
 print('Horizon artwork:',len(raw),'->',len(out),'bytes')
+
+# Use the common four-button layout after rebuilding the immutable seed.
+import subprocess,sys
+subprocess.run([sys.executable,str(ROOT/"tools/console-menu/build_button_helpers.py"),"--output",str(a.output)],check=True)

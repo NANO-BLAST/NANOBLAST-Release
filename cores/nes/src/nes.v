@@ -237,11 +237,13 @@ wire [2:0] div_ppu_n = 3'd4;
 reg [4:0] div_cpu = 5'd1;
 reg [2:0] div_ppu = 3'd1;
 reg [1:0] div_sys = 2'd0;
+reg was_reset = 0;
+wire reset_release = was_reset && !reset;
 
 // CE's
 wire menu_frozen = MENU_PAUSE_SUPPORT && menu_pause;
-wire cpu_ce  = (div_cpu == div_cpu_n) && !menu_frozen;
-wire ppu_ce  = (div_ppu == div_ppu_n) && !menu_frozen;
+wire cpu_ce  = (div_cpu == div_cpu_n) && (!menu_frozen || reset) && !reset_release;
+wire ppu_ce  = (div_ppu == div_ppu_n) && (!menu_frozen || reset) && !reset_release;
 wire cart_ce = (cart_pre & ppu_ce); // First PPU cycle where cpu data is visible.
 
 // Signals
@@ -269,6 +271,7 @@ reg [2:0] cpu_tick_count;
 wire skip_ppu_cycle = (cpu_tick_count == 4) && (ppu_tick == 0);
 
 always @(posedge clk) begin
+ was_reset <= reset;
  if(!menu_frozen || reset)begin
 	if (~freeze_clocks | ~(div_ppu == (div_ppu_n - 1'b1))) begin
 		if (~skip_ppu_cycle)
@@ -307,13 +310,21 @@ always @(posedge clk) begin
 	else if (cpu_ce) 
 		odd_or_even <= ~odd_or_even;
 
-	// Realign if the system type changes.
+	// Reset must clock the CPU/PPU even under menu pause: several PPU
+	// registers only reset on ce. Realign once on reset entry, then run
+	// dividers throughout the load so those synchronous resets can finish.
+	// Memory requests remain suppressed while the menu owns SDRAM.
+	// Realign again on release, after the top has drained menu DMA and
+	// chosen the SDRAM reference phase; never consume an old CE on that edge.
 	last_sys_type <= sys_type;
-	if (last_sys_type != sys_type) begin
+	if ((reset && !was_reset) || reset_release || last_sys_type != sys_type) begin
 		div_cpu <= 5'd1;
 		div_ppu <= 3'd1;
 		div_sys <= 0;
 		cpu_tick_count <= 0;
+		ppu_tick <= 0;
+		freeze_clocks <= 0;
+		faux_pixel_cnt <= 0;
 	end
  end
 end
